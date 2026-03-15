@@ -62,7 +62,14 @@ export function SetRow({ set, onUpdate, onRemove }: Props) {
         ))}
       </div>
 
-      {set.saved && <span class="set-saved" aria-label="Saved">✓</span>}
+      <span
+        class="set-saved"
+        style={{ visibility: set.saved ? 'visible' : 'hidden' }}
+        aria-label="Saved"
+        aria-hidden={set.saved ? 'false' : 'true'}
+      >
+        ✓
+      </span>
 
       <button
         class="set-remove-btn"
