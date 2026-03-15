@@ -1,4 +1,5 @@
 import type { TrackerExercise } from './exercise-row';
+import type { Effort } from '../../api/types';
 
 /**
  * Apply quick-fill weight to all sets for a matching exercise.
@@ -43,6 +44,30 @@ export function applyQuickFillReps(
       sets: ex.sets.map((s) => {
         if (!reps) return s;
         return { ...s, reps, saved: false };
+      }),
+    };
+  });
+}
+
+/**
+ * Apply quick-fill effort to all sets for a matching exercise.
+ * When effort is non-empty, overwrites all set efforts and marks unsaved.
+ * When effort is empty (toggled off), only clears quickFillEffort (preserves existing set efforts).
+ */
+export function applyQuickFillEffort(
+  exercises: TrackerExercise[],
+  exerciseId: string,
+  exerciseOrder: number,
+  effort: Effort | '',
+): TrackerExercise[] {
+  return exercises.map((ex) => {
+    if (ex.exercise_id !== exerciseId || ex.exercise_order !== exerciseOrder) return ex;
+    return {
+      ...ex,
+      quickFillEffort: effort,
+      sets: ex.sets.map((s) => {
+        if (!effort) return s;
+        return { ...s, effort, saved: false };
       }),
     };
   });

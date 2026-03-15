@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyQuickFillWeight, applyQuickFillReps } from './quick-fill';
+import { applyQuickFillWeight, applyQuickFillReps, applyQuickFillEffort } from './quick-fill';
 import type { TrackerExercise } from './exercise-row';
 import type { TrackerSet } from './set-row';
 
@@ -26,6 +26,7 @@ function makeExercise(overrides: Partial<TrackerExercise> = {}): TrackerExercise
     sets: [makeSet({ set_number: 1 }), makeSet({ set_number: 2 }), makeSet({ set_number: 3 })],
     quickFillWeight: '',
     quickFillReps: '',
+    quickFillEffort: '',
     ...overrides,
   };
 }
@@ -229,5 +230,81 @@ describe('applyQuickFillReps', () => {
     expect(result[0].sets[1].reps).toBe('10');
     expect(result[0].sets[0].saved).toBe(false);
     expect(result[0].sets[1].saved).toBe(false);
+  });
+});
+
+describe('applyQuickFillEffort', () => {
+  // AC2: Effort quick-fill applies to all sets and marks unsaved
+  it('applies effort to all sets and marks them unsaved', () => {
+    const exercises = [makeExercise({
+      sets: [
+        makeSet({ set_number: 1, effort: '', saved: true, sheetRow: 2 }),
+        makeSet({ set_number: 2, effort: '', saved: true, sheetRow: 3 }),
+        makeSet({ set_number: 3, effort: '', saved: true, sheetRow: 4 }),
+      ],
+    })];
+
+    const result = applyQuickFillEffort(exercises, 'ex1', 1, 'Medium');
+
+    expect(result[0].quickFillEffort).toBe('Medium');
+    expect(result[0].sets[0].effort).toBe('Medium');
+    expect(result[0].sets[1].effort).toBe('Medium');
+    expect(result[0].sets[2].effort).toBe('Medium');
+    expect(result[0].sets[0].saved).toBe(false);
+    expect(result[0].sets[1].saved).toBe(false);
+    expect(result[0].sets[2].saved).toBe(false);
+  });
+
+  // AC3: Toggle-off clears quickFillEffort but does not modify set efforts
+  it('does not clear existing set efforts when toggled off', () => {
+    const exercises = [makeExercise({
+      quickFillEffort: 'Medium',
+      sets: [
+        makeSet({ set_number: 1, effort: 'Medium', saved: true, sheetRow: 2 }),
+        makeSet({ set_number: 2, effort: 'Medium', saved: true, sheetRow: 3 }),
+      ],
+    })];
+
+    const result = applyQuickFillEffort(exercises, 'ex1', 1, '');
+
+    expect(result[0].quickFillEffort).toBe('');
+    // Set efforts should NOT be cleared
+    expect(result[0].sets[0].effort).toBe('Medium');
+    expect(result[0].sets[1].effort).toBe('Medium');
+    // Saved status should be preserved
+    expect(result[0].sets[0].saved).toBe(true);
+    expect(result[0].sets[1].saved).toBe(true);
+  });
+
+  // AC4: Effort quick-fill does not modify weight or reps
+  it('does not modify weight or reps values', () => {
+    const exercises = [makeExercise({
+      sets: [
+        makeSet({ set_number: 1, weight: '135', reps: '10', effort: '', saved: true, sheetRow: 2 }),
+        makeSet({ set_number: 2, weight: '185', reps: '8', effort: '', saved: true, sheetRow: 3 }),
+      ],
+    })];
+
+    const result = applyQuickFillEffort(exercises, 'ex1', 1, 'Hard');
+
+    expect(result[0].sets[0].weight).toBe('135');
+    expect(result[0].sets[0].reps).toBe('10');
+    expect(result[0].sets[1].weight).toBe('185');
+    expect(result[0].sets[1].reps).toBe('8');
+    expect(result[0].sets[0].effort).toBe('Hard');
+    expect(result[0].sets[1].effort).toBe('Hard');
+  });
+
+  it('only affects the matching exercise', () => {
+    const exercises = [
+      makeExercise({ exercise_id: 'ex1', exercise_order: 1 }),
+      makeExercise({ exercise_id: 'ex2', exercise_order: 2, exercise_name: 'Squat' }),
+    ];
+
+    const result = applyQuickFillEffort(exercises, 'ex1', 1, 'Easy');
+
+    expect(result[0].sets[0].effort).toBe('Easy');
+    expect(result[1].sets[0].effort).toBe('');
+    expect(result[1].quickFillEffort).toBe('');
   });
 });

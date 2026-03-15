@@ -3,7 +3,7 @@ import { SetRow } from './set-row';
 import { LastTimePanel } from './last-time-panel';
 import { ALL_SECTIONS } from './section-management';
 import type { TrackerSet } from './set-row';
-import type { SetWithRow } from '../../api/types';
+import type { Effort, SetWithRow } from '../../api/types';
 
 export interface TrackerExercise {
   exercise_id: string;
@@ -13,6 +13,7 @@ export interface TrackerExercise {
   sets: TrackerSet[];
   quickFillWeight: string;
   quickFillReps: string;
+  quickFillEffort: Effort | '';
 }
 
 interface Props {
@@ -23,6 +24,7 @@ interface Props {
   onRemoveSet: (setNumber: number) => void;
   onQuickFillWeight: (weight: string) => void;
   onQuickFillReps: (reps: string) => void;
+  onQuickFillEffort: (effort: Effort | '') => void;
   onCopyDown: (lastTimeSets: SetWithRow[]) => void;
   onChangeSection: (newSection: string) => void;
   onMoveUp: () => void;
@@ -53,6 +55,7 @@ export function ExerciseRow({
   onRemoveSet,
   onQuickFillWeight,
   onQuickFillReps,
+  onQuickFillEffort,
   onCopyDown,
   onChangeSection,
   onMoveUp,
@@ -268,29 +271,46 @@ export function ExerciseRow({
         />
       )}
 
+      <p class="quick-fill-heading">Quick fill</p>
       <div class="quick-fill-row">
-        <span class="quick-fill-label">Quick fill</span>
-        <input
-          id={`quick-fill-wt-${exercise.exercise_id}-${exercise.exercise_order}`}
-          class="form-input quick-fill-input"
-          type="number"
-          inputMode="decimal"
-          placeholder="lbs"
-          aria-label="Fill all sets weight (lbs)"
-          value={exercise.quickFillWeight}
-          onInput={(e) => onQuickFillWeight((e.target as HTMLInputElement).value)}
-        />
-        <span class="set-input-separator">×</span>
-        <input
-          id={`quick-fill-reps-${exercise.exercise_id}-${exercise.exercise_order}`}
-          class="form-input quick-fill-input"
-          type="number"
-          inputMode="numeric"
-          placeholder="reps"
-          aria-label="Fill all sets reps"
-          value={exercise.quickFillReps}
-          onInput={(e) => onQuickFillReps((e.target as HTMLInputElement).value)}
-        />
+        <span class="quick-fill-spacer" aria-hidden="true" />
+        <div class="set-inputs">
+          <input
+            id={`quick-fill-wt-${exercise.exercise_id}-${exercise.exercise_order}`}
+            class="form-input set-weight-input"
+            type="number"
+            inputMode="decimal"
+            placeholder="lbs"
+            aria-label="Fill all sets weight (lbs)"
+            value={exercise.quickFillWeight}
+            onInput={(e) => onQuickFillWeight((e.target as HTMLInputElement).value)}
+          />
+          <span class="set-input-separator">×</span>
+          <input
+            id={`quick-fill-reps-${exercise.exercise_id}-${exercise.exercise_order}`}
+            class="form-input set-reps-input"
+            type="number"
+            inputMode="numeric"
+            placeholder="reps"
+            aria-label="Fill all sets reps"
+            value={exercise.quickFillReps}
+            onInput={(e) => onQuickFillReps((e.target as HTMLInputElement).value)}
+          />
+        </div>
+        <div class="effort-toggle">
+          {(['Easy', 'Medium', 'Hard'] as Effort[]).map((e) => (
+            <button
+              key={e}
+              class={`effort-btn effort-btn-${e.toLowerCase()}${exercise.quickFillEffort === e ? ' active' : ''}`}
+              onClick={() => onQuickFillEffort(exercise.quickFillEffort === e ? '' : e)}
+              aria-label={`Fill all sets: ${e}`}
+              aria-pressed={exercise.quickFillEffort === e ? 'true' : 'false'}
+            >
+              {e === 'Easy' ? 'E' : e === 'Medium' ? 'M' : 'H'}
+            </button>
+          ))}
+        </div>
+        <span class="quick-fill-end-spacer" aria-hidden="true" />
       </div>
 
       <div class={`tracker-set-list${flashSets ? ' copy-down-flash' : ''}`}>

@@ -26,6 +26,7 @@ function makeExercise(overrides: Partial<TrackerExercise> = {}): TrackerExercise
     sets: [makeSet({ set_number: 1 }), makeSet({ set_number: 2 })],
     quickFillWeight: '',
     quickFillReps: '',
+    quickFillEffort: '',
     ...overrides,
   };
 }
