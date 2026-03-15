@@ -8,9 +8,17 @@ export const workouts = signal<WorkoutWithRow[]>([]);
 export const sets = signal<SetWithRow[]>([]);
 export const loading = signal(true);
 
+// Warmup exercise metadata (no sets — display only in tracker)
+export interface WarmupExerciseInfo {
+  exercise_id: string;
+  exercise_name: string;
+  exercise_order: number;
+}
+
 // UI state
 export const activeWorkoutId = signal<string | null>(null);
 export const activeWorkoutSets = signal<SetWithRow[]>([]);
+export const activeWarmupExercises = signal<WarmupExerciseInfo[]>([]);
 export const filterType = signal<WorkoutType | null>(null);
 export const filterTags = signal<string[]>([]);
 
