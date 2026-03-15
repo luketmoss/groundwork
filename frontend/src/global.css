@@ -1237,26 +1237,27 @@ input, select, textarea {
   font-size: var(--text-base);
 }
 
-.quick-fill-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
-}
-
-.quick-fill-label {
+.quick-fill-heading {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
-  white-space: nowrap;
+  margin: 0 0 var(--space-xs) 0;
 }
 
-.quick-fill-input {
-  flex: 1;
-  min-width: 64px;
-  min-height: 44px;
-  padding: var(--space-xs) var(--space-sm);
-  font-size: var(--text-sm);
+.quick-fill-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.quick-fill-spacer {
+  min-width: 24px;
+}
+
+.quick-fill-end-spacer {
+  /* set-saved (16px) + gap (4px) + set-remove-btn (24px) */
+  min-width: 44px;
 }
 
 .tracker-set-list {

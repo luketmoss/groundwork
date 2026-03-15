@@ -8,7 +8,7 @@ import { ExerciseRow } from './exercise-row';
 import type { TrackerExercise } from './exercise-row';
 import type { TrackerSet } from './set-row';
 import type { ExerciseWithRow, Effort, SetWithRow } from '../../api/types';
-import { applyQuickFillWeight, applyQuickFillReps } from './quick-fill';
+import { applyQuickFillWeight, applyQuickFillReps, applyQuickFillEffort } from './quick-fill';
 import { applyCopyDown } from './copy-down';
 import { isWarmupExercise } from './warmup';
 import { applyChangeSection, applyMoveUp, applyMoveDown } from './section-management';
@@ -35,6 +35,7 @@ function buildExerciseList(setRows: typeof activeWorkoutSets.value): TrackerExer
         sets: [],
         quickFillWeight: '',
         quickFillReps: '',
+        quickFillEffort: '',
       };
       map.set(key, ex);
     }
@@ -79,6 +80,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
       sets: [],
       quickFillWeight: '',
       quickFillReps: '',
+      quickFillEffort: '',
     }));
     const merged = [...warmups, ...tracked].sort((a, b) => a.exercise_order - b.exercise_order);
     setExerciseList(merged);
@@ -198,6 +200,23 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
         if (ex) {
           for (const s of ex.sets) {
             if (s.weight) {
+              setTimeout(() => debouncedSave(exerciseOrder, exerciseId, s), 0);
+            }
+          }
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleQuickFillEffort = (exerciseId: string, exerciseOrder: number, effort: Effort | '') => {
+    setExerciseList((prev) => {
+      const next = applyQuickFillEffort(prev, exerciseId, exerciseOrder, effort);
+      if (effort) {
+        const ex = next.find((e) => e.exercise_id === exerciseId && e.exercise_order === exerciseOrder);
+        if (ex) {
+          for (const s of ex.sets) {
+            if (s.weight || s.reps) {
               setTimeout(() => debouncedSave(exerciseOrder, exerciseId, s), 0);
             }
           }
@@ -453,6 +472,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
       }],
       quickFillWeight: '',
       quickFillReps: '',
+      quickFillEffort: '',
     };
     setExerciseList((prev) => [...prev, newExercise]);
     setShowExercisePicker(false);
@@ -602,6 +622,9 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
               }
               onQuickFillReps={(reps) =>
                 handleQuickFillReps(ex.exercise_id, ex.exercise_order, reps)
+              }
+              onQuickFillEffort={(effort) =>
+                handleQuickFillEffort(ex.exercise_id, ex.exercise_order, effort)
               }
               onCopyDown={(lastTimeSets) =>
                 handleCopyDown(ex.exercise_id, ex.exercise_order, lastTimeSets)
