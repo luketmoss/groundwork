@@ -128,6 +128,37 @@ export function ExerciseRow({
 
   const showToolbar = totalExercises > 1;
 
+  const actionButtons = showToolbar && (
+    <>
+      <button
+        type="button"
+        class="exercise-toolbar-btn"
+        onClick={onMoveUp}
+        disabled={isFirst}
+        aria-label={`Move ${exercise.exercise_name} up`}
+      >
+        ▲
+      </button>
+      <button
+        type="button"
+        class="exercise-toolbar-btn"
+        onClick={onMoveDown}
+        disabled={isLast}
+        aria-label={`Move ${exercise.exercise_name} down`}
+      >
+        ▼
+      </button>
+      <button
+        type="button"
+        class="exercise-toolbar-btn exercise-toolbar-remove"
+        onClick={onRemoveExercise}
+        aria-label={`Remove ${exercise.exercise_name}`}
+      >
+        ✕
+      </button>
+    </>
+  );
+
   const sectionPickerRow = showSectionPicker && (
     <div class="section-picker-row" role="group" aria-label="Select section">
       {ALL_SECTIONS.map((s) => (
@@ -168,37 +199,6 @@ export function ExerciseRow({
     </div>
   );
 
-  const toolbarRow = showToolbar && (
-    <div class="exercise-toolbar-row">
-      <button
-        type="button"
-        class="exercise-toolbar-btn"
-        onClick={onMoveUp}
-        disabled={isFirst}
-        aria-label={`Move ${exercise.exercise_name} up`}
-      >
-        ▲
-      </button>
-      <button
-        type="button"
-        class="exercise-toolbar-btn"
-        onClick={onMoveDown}
-        disabled={isLast}
-        aria-label={`Move ${exercise.exercise_name} down`}
-      >
-        ▼
-      </button>
-      <button
-        type="button"
-        class="exercise-toolbar-btn exercise-toolbar-remove"
-        onClick={onRemoveExercise}
-        aria-label={`Remove ${exercise.exercise_name}`}
-      >
-        ✕
-      </button>
-    </div>
-  );
-
   // Warmup exercises render as simplified name-only cards
   if (isWarmup) {
     return (
@@ -206,7 +206,7 @@ export function ExerciseRow({
         class="tracker-exercise tracker-exercise-warmup"
         aria-label={`Warmup: ${exercise.exercise_name} (list only)`}
       >
-        <div class="tracker-exercise-header">
+        <div class="tracker-exercise-controls">
           <button
             type="button"
             class={`${sectionBadgeClass(exercise.section)} section-badge-btn`}
@@ -217,10 +217,12 @@ export function ExerciseRow({
             {exercise.section}
           </button>
           <span class="tracker-exercise-name">{exercise.exercise_name}</span>
+          <div class="tracker-exercise-actions">
+            {actionButtons}
+          </div>
         </div>
         {sectionPickerRow}
         {warmupConfirmRow}
-        {toolbarRow}
       </div>
     );
   }
@@ -253,36 +255,7 @@ export function ExerciseRow({
               <polyline points="12 6 12 12 16 14" />
             </svg>
           </button>
-          {showToolbar && (
-            <>
-              <button
-                type="button"
-                class="exercise-toolbar-btn"
-                onClick={onMoveUp}
-                disabled={isFirst}
-                aria-label={`Move ${exercise.exercise_name} up`}
-              >
-                ▲
-              </button>
-              <button
-                type="button"
-                class="exercise-toolbar-btn"
-                onClick={onMoveDown}
-                disabled={isLast}
-                aria-label={`Move ${exercise.exercise_name} down`}
-              >
-                ▼
-              </button>
-              <button
-                type="button"
-                class="exercise-toolbar-btn exercise-toolbar-remove"
-                onClick={onRemoveExercise}
-                aria-label={`Remove ${exercise.exercise_name}`}
-              >
-                ✕
-              </button>
-            </>
-          )}
+          {actionButtons}
         </div>
       </div>
 

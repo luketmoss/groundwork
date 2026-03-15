@@ -183,18 +183,29 @@ describe('AC4: Quick fill section uses border-top divider instead of text label'
   });
 });
 
-describe('AC5: Warmup cards are unaffected', () => {
-  it('warmup cards do not use the new controls row layout', () => {
+describe('AC5: Warmup cards use same controls layout as other sections', () => {
+  it('warmup cards use tracker-exercise-controls with right-aligned action buttons', () => {
     const { container } = renderExerciseRow({ section: 'warmup' }, { totalExercises: 3 });
-    // Warmup cards should NOT have the new controls row
     const controlsRow = container.querySelector('.tracker-exercise-controls');
-    expect(controlsRow).toBeNull();
-    // Should still have the old header
-    const header = container.querySelector('.tracker-exercise-header');
-    expect(header).not.toBeNull();
-    // Should still have toolbar row below header
+    expect(controlsRow).not.toBeNull();
+    // Section badge inside controls row
+    const badge = controlsRow!.querySelector('.section-badge-btn');
+    expect(badge).not.toBeNull();
+    expect(badge!.textContent).toBe('warmup');
+    // Exercise name inside controls row
+    const name = controlsRow!.querySelector('.tracker-exercise-name');
+    expect(name).not.toBeNull();
+    // Action buttons inside tracker-exercise-actions (right-aligned)
+    const actions = controlsRow!.querySelector('.tracker-exercise-actions');
+    expect(actions).not.toBeNull();
+    const buttons = actions!.querySelectorAll('.exercise-toolbar-btn');
+    expect(buttons.length).toBe(3); // ▲ ▼ ✕
+  });
+
+  it('warmup cards do not render the old exercise-toolbar-row', () => {
+    const { container } = renderExerciseRow({ section: 'warmup' }, { totalExercises: 3 });
     const toolbar = container.querySelector('.exercise-toolbar-row');
-    expect(toolbar).not.toBeNull();
+    expect(toolbar).toBeNull();
   });
 
   it('warmup cards do not render quick fill section', () => {

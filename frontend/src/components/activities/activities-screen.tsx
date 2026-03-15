@@ -10,7 +10,7 @@ export function ActivitiesScreen() {
     <div class="screen activities-screen">
       <header class="screen-header">
         <div class="activities-header-row">
-          <h1>Workouts</h1>
+          <h1>Activities</h1>
           <button
             class="btn-icon"
             onClick={() => setShowFilters(!showFilters)}

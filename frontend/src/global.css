@@ -1217,8 +1217,12 @@ input, select, textarea {
   padding: var(--space-sm) var(--space-md);
 }
 
-.tracker-exercise-warmup .tracker-exercise-header {
+.tracker-exercise-warmup .tracker-exercise-controls {
   margin-bottom: 0;
+}
+
+.tracker-exercise-warmup .tracker-exercise-name {
+  flex: 1;
 }
 
 [data-theme="dark"] .tracker-exercise-warmup {
