@@ -24,6 +24,25 @@ function sectionBadgeClass(section: string): string {
 }
 
 export function ExerciseRow({ exercise, onUpdateSet, onAddSet, onRemoveSet, onQuickFillWeight }: Props) {
+  const isWarmup = exercise.section === 'warmup';
+
+  // Warmup exercises render as simplified name-only cards
+  if (isWarmup) {
+    return (
+      <div
+        class="tracker-exercise tracker-exercise-warmup"
+        aria-label={`Warmup: ${exercise.exercise_name} (list only)`}
+      >
+        <div class="tracker-exercise-header">
+          <span class={sectionBadgeClass(exercise.section)}>
+            {exercise.section}
+          </span>
+          <span class="tracker-exercise-name">{exercise.exercise_name}</span>
+        </div>
+      </div>
+    );
+  }
+
   const isSS = exercise.section.startsWith('SS');
   const cardClass = `tracker-exercise${isSS ? ` section-ss-group ss-${exercise.section}` : ''}`;
 

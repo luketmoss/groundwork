@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
-import { activeWorkoutSets } from '../../state/store';
+import { activeWorkoutSets, activeWarmupExercises } from '../../state/store';
 import { saveSet, removeSet, finishWorkout, deleteWorkout } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
@@ -9,6 +9,7 @@ import type { TrackerExercise } from './exercise-row';
 import type { TrackerSet } from './set-row';
 import type { ExerciseWithRow, Effort } from '../../api/types';
 import { applyQuickFillWeight } from './quick-fill';
+import { isWarmupExercise } from './warmup';
 
 interface Props {
   workoutId: string;
@@ -63,9 +64,19 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
   const [showFinishForm, setShowFinishForm] = useState(false);
   const saveTimers = useRef<Map<string, number>>(new Map());
 
-  // Initialize from signal
+  // Initialize from signal, merging warmup exercises (list-only, no sets)
   useEffect(() => {
-    setExerciseList(buildExerciseList(activeWorkoutSets.value));
+    const tracked = buildExerciseList(activeWorkoutSets.value);
+    const warmups: TrackerExercise[] = activeWarmupExercises.value.map((w) => ({
+      exercise_id: w.exercise_id,
+      exercise_name: w.exercise_name,
+      section: 'warmup',
+      exercise_order: w.exercise_order,
+      sets: [],
+      quickFillWeight: '',
+    }));
+    const merged = [...warmups, ...tracked].sort((a, b) => a.exercise_order - b.exercise_order);
+    setExerciseList(merged);
   }, []);
 
   // Debounced save for a specific set
@@ -272,8 +283,9 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
     try {
       await flushPendingSaves();
 
-      // Save any unsaved sets with data
+      // Save any unsaved sets with data (skip warmup exercises — they are list-only)
       for (const ex of exerciseList) {
+        if (isWarmupExercise(ex)) continue;
         for (const set of ex.sets) {
           if (!set.saved && (set.weight || set.reps)) {
             await saveSet({

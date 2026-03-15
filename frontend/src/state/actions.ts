@@ -1,4 +1,4 @@
-import { exercises, templates, workouts, sets, loading, activeWorkoutId, activeWorkoutSets, showToast } from './store';
+import { exercises, templates, workouts, sets, loading, activeWorkoutId, activeWorkoutSets, activeWarmupExercises, showToast } from './store';
 import { fetchExercises, createExercise, updateExercise as updateExerciseApi, deleteExercise as deleteExerciseApi } from '../api/exercises-api';
 import { fetchTemplateRows, groupTemplateRows, createTemplate as createTemplateApi, updateTemplate as updateTemplateApi, deleteTemplate as deleteTemplateApi } from '../api/templates-api';
 import { fetchWorkouts, fetchSets, createWorkout as createWorkoutApi, updateWorkout as updateWorkoutApi, deleteWorkoutRows, appendSet as appendSetApi, appendSets as appendSetsApi, updateSet as updateSetApi, deleteSetRow } from '../api/workouts-api';
@@ -183,6 +183,7 @@ export async function startWorkout(
       await prepopulateSetsFromTemplate(workout.id, data.template_id, token);
     } else {
       activeWorkoutSets.value = [];
+      activeWarmupExercises.value = [];
     }
 
     return workout.id;
@@ -205,12 +206,21 @@ async function prepopulateSetsFromTemplate(
   }
 
   const newSets: WorkoutSet[] = [];
-  for (const ex of tpl.exercises) {
-    const setCount = parseSetCount(ex.sets);
-    // Warmup exercises get 1 set by default if no sets specified
-    const count = ex.section === 'warmup' && !ex.sets.trim() ? 1 : setCount;
+  const warmups: { exercise_id: string; exercise_name: string; exercise_order: number }[] = [];
 
-    for (let s = 1; s <= count; s++) {
+  for (const ex of tpl.exercises) {
+    // Warmup exercises are list-only — no set rows generated
+    if (ex.section === 'warmup') {
+      warmups.push({
+        exercise_id: ex.exercise_id,
+        exercise_name: ex.exercise_name,
+        exercise_order: ex.order,
+      });
+      continue;
+    }
+
+    const setCount = parseSetCount(ex.sets);
+    for (let s = 1; s <= setCount; s++) {
       newSets.push({
         workout_id: workoutId,
         exercise_id: ex.exercise_id,
@@ -226,6 +236,8 @@ async function prepopulateSetsFromTemplate(
       });
     }
   }
+
+  activeWarmupExercises.value = warmups;
 
   // Batch append to Sheets
   await appendSetsApi(newSets, token);

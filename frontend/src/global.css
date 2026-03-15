@@ -1177,6 +1177,23 @@ input, select, textarea {
   padding: var(--space-md);
 }
 
+/* Warmup exercises — simplified list-only card */
+.tracker-exercise-warmup {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-left: 3px solid #e65100;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.tracker-exercise-warmup .tracker-exercise-header {
+  margin-bottom: 0;
+}
+
+[data-theme="dark"] .tracker-exercise-warmup {
+  border-left-color: #ffb74d;
+}
+
 .tracker-exercise-header {
   display: flex;
   align-items: center;
