@@ -242,6 +242,7 @@ export function ExerciseRow({
         </button>
         <div class="tracker-exercise-actions">
           <button
+            type="button"
             class="last-time-toggle exercise-toolbar-btn"
             onClick={() => setShowLastTime(!showLastTime)}
             aria-label={`View previous performance for ${exercise.exercise_name}`}
