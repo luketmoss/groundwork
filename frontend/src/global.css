@@ -1693,6 +1693,72 @@ input, select, textarea {
   font-style: italic;
 }
 
+/* ===== Last Time Toggle Button ===== */
+.last-time-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.last-time-toggle:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.last-time-toggle[aria-expanded="true"] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.last-time-icon {
+  display: block;
+}
+
+/* ===== Last Time Panel ===== */
+.last-time-panel {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-sm);
+}
+
+.last-time-panel-empty {
+  text-align: center;
+  padding: var(--space-md);
+}
+
+.last-time-empty-text {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.last-time-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.last-time-sets .exercise-detail-sets-header,
+.last-time-sets .exercise-detail-set-row {
+  font-size: var(--text-sm);
+}
+
+.last-time-sets .exercise-detail-set-row:last-child {
+  border-bottom: none;
+}
+
 .detail-actions {
   margin-top: var(--space-xl);
   padding-top: var(--space-lg);
