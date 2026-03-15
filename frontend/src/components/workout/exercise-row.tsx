@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'preact/hooks';
 import { SetRow } from './set-row';
+import { LastTimePanel } from './last-time-panel';
 import type { TrackerSet } from './set-row';
 
 export interface TrackerExercise {
@@ -12,6 +14,7 @@ export interface TrackerExercise {
 
 interface Props {
   exercise: TrackerExercise;
+  currentWorkoutId: string;
   onUpdateSet: (setNumber: number, updates: Partial<TrackerSet>) => void;
   onAddSet: () => void;
   onRemoveSet: (setNumber: number) => void;
@@ -23,8 +26,19 @@ function sectionBadgeClass(section: string): string {
   return `section-badge section-${section}`;
 }
 
-export function ExerciseRow({ exercise, onUpdateSet, onAddSet, onRemoveSet, onQuickFillWeight }: Props) {
+export function ExerciseRow({ exercise, currentWorkoutId, onUpdateSet, onAddSet, onRemoveSet, onQuickFillWeight }: Props) {
   const isWarmup = exercise.section === 'warmup';
+  const [showLastTime, setShowLastTime] = useState(false);
+
+  // AC4: Escape key closes the panel
+  useEffect(() => {
+    if (!showLastTime) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowLastTime(false);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showLastTime]);
 
   // Warmup exercises render as simplified name-only cards
   if (isWarmup) {
@@ -53,7 +67,25 @@ export function ExerciseRow({ exercise, onUpdateSet, onAddSet, onRemoveSet, onQu
           {exercise.section}
         </span>
         <span class="tracker-exercise-name">{exercise.exercise_name}</span>
+        <button
+          class="last-time-toggle"
+          onClick={() => setShowLastTime(!showLastTime)}
+          aria-label={`View previous performance for ${exercise.exercise_name}`}
+          aria-expanded={showLastTime ? 'true' : 'false'}
+        >
+          <svg class="last-time-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </button>
       </div>
+
+      {showLastTime && (
+        <LastTimePanel
+          exerciseId={exercise.exercise_id}
+          currentWorkoutId={currentWorkoutId}
+        />
+      )}
 
       <div class="quick-fill-row">
         <label class="quick-fill-label" for={`quick-fill-${exercise.exercise_id}-${exercise.exercise_order}`}>Weight</label>

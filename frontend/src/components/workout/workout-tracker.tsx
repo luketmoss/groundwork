@@ -385,6 +385,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
           <ExerciseRow
             key={`${ex.exercise_id}-${ex.exercise_order}`}
             exercise={ex}
+            currentWorkoutId={workoutId}
             onUpdateSet={(setNum, updates) =>
               handleUpdateSet(ex.exercise_id, ex.exercise_order, setNum, updates)
             }

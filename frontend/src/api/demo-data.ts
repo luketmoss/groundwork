@@ -103,6 +103,7 @@ export const DEMO_WORKOUTS: WorkoutWithRow[] = [
   { id: 'w_demo001', date: workoutDate, time: '06:30', type: 'weight', name: 'Upper Push A', template_id: 'tpl_demo001', notes: 'Felt strong today', duration_min: '62', created: '2025-01-14T06:30:00.000Z', copied_from: '', sheetRow: 2 },
   { id: 'w_demo002', date: '2025-01-13', time: '07:00', type: 'stretch', name: 'Morning Stretch', template_id: '', notes: 'Full body stretch, focused on hamstrings and hip flexors', duration_min: '20', created: '2025-01-13T07:00:00.000Z', copied_from: '', sheetRow: 3 },
   { id: 'w_demo003', date: '2025-01-12', time: '17:30', type: 'bike', name: 'Evening Ride', template_id: '', notes: 'Easy 30 min zone 2 ride on the trainer', duration_min: '30', created: '2025-01-12T17:30:00.000Z', copied_from: '', sheetRow: 4 },
+  { id: 'w_demo004', date: '2025-01-07', time: '06:30', type: 'weight', name: 'Upper Push A', template_id: 'tpl_demo001', notes: 'Good session', duration_min: '58', created: '2025-01-07T06:30:00.000Z', copied_from: '', sheetRow: 5 },
 ];
 
 export const DEMO_SETS: SetWithRow[] = [
@@ -134,4 +135,12 @@ export const DEMO_SETS: SetWithRow[] = [
   // Burnout — Ab Wheel
   { workout_id: 'w_demo001', exercise_id: 'ex_demo012', exercise_name: 'Ab Wheel', section: 'burnout', exercise_order: 8, set_number: 1, planned_reps: '6-10', weight: '', reps: '10', effort: 'Medium', notes: '', sheetRow: 20 },
   { workout_id: 'w_demo001', exercise_id: 'ex_demo012', exercise_name: 'Ab Wheel', section: 'burnout', exercise_order: 8, set_number: 2, planned_reps: '6-10', weight: '', reps: '8', effort: 'Hard', notes: '', sheetRow: 21 },
+
+  // ── Previous workout (w_demo004 — Jan 7) for last-time panel testing ──
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo001', exercise_name: 'Barbell Bench Press', section: 'primary', exercise_order: 3, set_number: 1, planned_reps: '4-6', weight: '175', reps: '6', effort: 'Medium', notes: '', sheetRow: 22 },
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo001', exercise_name: 'Barbell Bench Press', section: 'primary', exercise_order: 3, set_number: 2, planned_reps: '4-6', weight: '175', reps: '6', effort: 'Medium', notes: '', sheetRow: 23 },
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo001', exercise_name: 'Barbell Bench Press', section: 'primary', exercise_order: 3, set_number: 3, planned_reps: '4-6', weight: '175', reps: '5', effort: 'Hard', notes: '', sheetRow: 24 },
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo002', exercise_name: 'Incline DB Press', section: 'SS1', exercise_order: 4, set_number: 1, planned_reps: '10-12', weight: '50', reps: '12', effort: 'Easy', notes: '', sheetRow: 25 },
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo002', exercise_name: 'Incline DB Press', section: 'SS1', exercise_order: 4, set_number: 2, planned_reps: '10-12', weight: '50', reps: '11', effort: 'Medium', notes: '', sheetRow: 26 },
+  { workout_id: 'w_demo004', exercise_id: 'ex_demo002', exercise_name: 'Incline DB Press', section: 'SS1', exercise_order: 4, set_number: 3, planned_reps: '10-12', weight: '50', reps: '10', effort: 'Medium', notes: '', sheetRow: 27 },
 ];
