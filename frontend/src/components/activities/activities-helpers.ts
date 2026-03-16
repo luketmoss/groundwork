@@ -126,6 +126,25 @@ export function getWeekWorkoutCount(
   return allWorkouts.filter(w => weekDates.has(w.date)).length;
 }
 
+/**
+ * Returns the total duration in minutes for workouts in the Mon–Sun week
+ * containing `todayStr`. Skips workouts with empty or non-numeric duration_min.
+ */
+export function getWeekTotalMinutes(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): number {
+  const days = getWeekStreak(allWorkouts, todayStr);
+  const weekDates = new Set(days.map(d => d.date));
+  let total = 0;
+  for (const w of allWorkouts) {
+    if (!weekDates.has(w.date)) continue;
+    const mins = parseInt(w.duration_min, 10);
+    if (!isNaN(mins)) total += mins;
+  }
+  return total;
+}
+
 // ── Tag aggregation ──────────────────────────────────────────────────
 
 /**

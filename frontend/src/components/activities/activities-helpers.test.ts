@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupWorkoutsByDate, getWeekStreak, getWeekWorkoutCount, getWorkoutTags, EQUIPMENT_TAGS, toLocalDateStr } from './activities-helpers';
+import { groupWorkoutsByDate, getWeekStreak, getWeekWorkoutCount, getWeekTotalMinutes, getWorkoutTags, EQUIPMENT_TAGS, toLocalDateStr } from './activities-helpers';
 import type { WorkoutWithRow, SetWithRow, ExerciseWithRow } from '../../api/types';
 
 function makeWorkout(overrides: Partial<WorkoutWithRow> = {}): WorkoutWithRow {
@@ -233,6 +233,50 @@ describe('getWeekWorkoutCount', () => {
       makeWorkout({ id: 'w2', date: '2026-03-09', time: '18:00' }),
     ];
     expect(getWeekWorkoutCount(workouts, today)).toBe(2);
+  });
+});
+
+// ── Weekly total minutes ─────────────────────────────────────────────
+
+describe('getWeekTotalMinutes', () => {
+  const today = '2026-03-15'; // Sunday; week = Mar 9–15
+
+  it('AC1: sums all durations when every workout has one', () => {
+    const workouts = [
+      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '45' }),
+      makeWorkout({ id: 'w3', date: '2026-03-15', duration_min: '45' }),
+    ];
+    expect(getWeekTotalMinutes(workouts, today)).toBe(150);
+  });
+
+  it('AC2: sums only workouts that have a duration (partial)', () => {
+    const workouts = [
+      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '' }),
+      makeWorkout({ id: 'w3', date: '2026-03-13', duration_min: '45' }),
+    ];
+    expect(getWeekTotalMinutes(workouts, today)).toBe(105);
+  });
+
+  it('AC3: returns 0 when no workouts have a duration', () => {
+    const workouts = [
+      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '' }),
+    ];
+    expect(getWeekTotalMinutes(workouts, today)).toBe(0);
+  });
+
+  it('AC4: returns 0 for no workouts', () => {
+    expect(getWeekTotalMinutes([], today)).toBe(0);
+  });
+
+  it('ignores workouts outside the current week', () => {
+    const workouts = [
+      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
+      makeWorkout({ id: 'w2', date: '2026-03-01', duration_min: '90' }), // outside week
+    ];
+    expect(getWeekTotalMinutes(workouts, today)).toBe(60);
   });
 });
 

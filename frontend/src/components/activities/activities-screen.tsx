@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import { navigate } from '../../router/router';
 import { filteredWorkouts, sets, exercises, workouts } from '../../state/store';
 import { ActivitiesFilters } from './activities-filters';
-import { groupWorkoutsByDate, getWorkoutTags, getWeekStreak, getWeekWorkoutCount, toLocalDateStr } from './activities-helpers';
+import { groupWorkoutsByDate, getWorkoutTags, getWeekStreak, getWeekWorkoutCount, getWeekTotalMinutes, toLocalDateStr } from './activities-helpers';
 import { LabelBadge } from '../shared/label-badge';
 
 /** Type-color map for inset box-shadow accent (light theme). */
@@ -20,6 +20,9 @@ export function ActivitiesScreen() {
   const groups = groupWorkoutsByDate(filteredWorkouts.value, todayStr);
   const weekDays = getWeekStreak(workouts.value, todayStr);
   const weekCount = getWeekWorkoutCount(workouts.value, todayStr);
+  const weekMinutes = getWeekTotalMinutes(workouts.value, todayStr);
+  const countText = `${weekCount} ${weekCount === 1 ? 'workout' : 'workouts'} this week`;
+  const ariaLabel = weekMinutes > 0 ? `${countText}, ${weekMinutes} min` : countText;
 
   return (
     <div class="screen activities-screen">
@@ -43,7 +46,7 @@ export function ActivitiesScreen() {
 
       <div
         class="week-streak-bar"
-        aria-label={`${weekCount} ${weekCount === 1 ? 'workout' : 'workouts'} this week`}
+        aria-label={ariaLabel}
       >
         <div class="week-streak-dots" aria-hidden="true">
           {weekDays.map((d) => (
@@ -59,7 +62,7 @@ export function ActivitiesScreen() {
           ))}
         </div>
         <p class="week-streak-count">
-          {weekCount} {weekCount === 1 ? 'workout' : 'workouts'} this week
+          {countText}{weekMinutes > 0 ? ` · ${weekMinutes} min` : ''}
         </p>
       </div>
 
