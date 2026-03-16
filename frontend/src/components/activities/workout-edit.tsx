@@ -12,14 +12,17 @@ interface Props {
 export function WorkoutEdit({ workoutId }: Props) {
   const workout = workouts.value.find((w) => w.id === workoutId);
 
+  // Enter edit mode synchronously so activeWorkoutSets is populated
+  // before WorkoutTracker's initialization useEffect runs
+  if (workout?.type === 'weight' && !isEditMode.value) {
+    enterEditMode(workoutId);
+  }
+
+  // Cleanup on unmount
   useEffect(() => {
     if (!workout) {
       navigate('/');
       return;
-    }
-
-    if (workout.type === 'weight') {
-      enterEditMode(workoutId);
     }
 
     return () => {
