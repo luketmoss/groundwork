@@ -1,8 +1,8 @@
 import { useState } from 'preact/hooks';
 import { navigate } from '../../router/router';
-import { filteredWorkouts, sets, exercises } from '../../state/store';
+import { filteredWorkouts, sets, exercises, workouts } from '../../state/store';
 import { ActivitiesFilters } from './activities-filters';
-import { groupWorkoutsByDate, getWorkoutTags } from './activities-helpers';
+import { groupWorkoutsByDate, getWorkoutTags, getWeekStreak, getWeekWorkoutCount } from './activities-helpers';
 import { LabelBadge } from '../shared/label-badge';
 
 /** Type-color map for inset box-shadow accent (light theme). */
@@ -18,6 +18,8 @@ export function ActivitiesScreen() {
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const groups = groupWorkoutsByDate(filteredWorkouts.value, todayStr);
+  const weekDays = getWeekStreak(workouts.value, todayStr);
+  const weekCount = getWeekWorkoutCount(workouts.value, todayStr);
 
   return (
     <div class="screen activities-screen">
@@ -38,6 +40,28 @@ export function ActivitiesScreen() {
           </button>
         </div>
       </header>
+
+      <div
+        class="week-streak-bar"
+        aria-label={`${weekCount} ${weekCount === 1 ? 'workout' : 'workouts'} this week`}
+      >
+        <div class="week-streak-dots" aria-hidden="true">
+          {weekDays.map((d) => (
+            <div
+              key={d.date}
+              class={`streak-dot${d.hasWorkout ? ' filled' : ''}${d.isToday ? ' today' : ''}`}
+            />
+          ))}
+        </div>
+        <div class="week-streak-labels" aria-hidden="true">
+          {weekDays.map((d) => (
+            <span key={d.date} class={`streak-label${d.isToday ? ' today' : ''}`}>{d.label}</span>
+          ))}
+        </div>
+        <p class="week-streak-count">
+          {weekCount} {weekCount === 1 ? 'workout' : 'workouts'} this week
+        </p>
+      </div>
 
       {showFilters && <ActivitiesFilters />}
 

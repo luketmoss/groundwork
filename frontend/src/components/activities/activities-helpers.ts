@@ -3,20 +3,11 @@ import type { WorkoutWithRow, SetWithRow, ExerciseWithRow } from '../../api/type
 // ── Equipment / non-muscle tags to exclude from card pills ───────────
 export const EQUIPMENT_TAGS = new Set(['BB', 'DB', 'FT', 'Warmup']);
 
-// ── Date grouping ────────────────────────────────────────────────────
+// ── Date grouping (month-based) ──────────────────────────────────────
 
 export interface WorkoutGroup {
   label: string;
   workouts: WorkoutWithRow[];
-}
-
-/** Get the Monday of the week containing `dateStr` (ISO yyyy-mm-dd). */
-function getMonday(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  const day = d.getDay(); // 0=Sun … 6=Sat
-  const diff = day === 0 ? 6 : day - 1; // shift so Monday=0
-  d.setDate(d.getDate() - diff);
-  return d.toISOString().slice(0, 10);
 }
 
 const MONTH_NAMES = [
@@ -25,9 +16,9 @@ const MONTH_NAMES = [
 ];
 
 /**
- * Groups workouts into date buckets: "This Week", "Last Week", then "Month Year".
- * Preserves the order of workouts within each group.
- * Empty groups are omitted.
+ * Groups workouts into calendar-month buckets: "This Month", "Last Month",
+ * then "Month Year" for older entries. Each workout appears in exactly one group.
+ * Preserves the order of workouts within each group. Empty groups are omitted.
  */
 export function groupWorkoutsByDate(
   workouts: WorkoutWithRow[],
@@ -35,26 +26,30 @@ export function groupWorkoutsByDate(
 ): WorkoutGroup[] {
   if (workouts.length === 0) return [];
 
-  const thisMonday = getMonday(todayStr);
-  // Last week's Monday = this Monday - 7 days
-  const lastMondayDate = new Date(thisMonday + 'T00:00:00');
-  lastMondayDate.setDate(lastMondayDate.getDate() - 7);
-  const lastMonday = lastMondayDate.toISOString().slice(0, 10);
+  const today = new Date(todayStr + 'T00:00:00');
+  const thisYear = today.getFullYear();
+  const thisMonth = today.getMonth();
 
-  // Ordered map: label → workouts
+  const lastMonthDate = new Date(today);
+  lastMonthDate.setDate(1);
+  lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+  const lastYear = lastMonthDate.getFullYear();
+  const lastMonth = lastMonthDate.getMonth();
+
   const groups = new Map<string, WorkoutWithRow[]>();
 
   for (const w of workouts) {
-    const wMonday = getMonday(w.date);
+    const d = new Date(w.date + 'T00:00:00');
+    const wYear = d.getFullYear();
+    const wMonth = d.getMonth();
+
     let label: string;
-    if (wMonday === thisMonday) {
-      label = 'This Week';
-    } else if (wMonday === lastMonday) {
-      label = 'Last Week';
+    if (wYear === thisYear && wMonth === thisMonth) {
+      label = 'This Month';
+    } else if (wYear === lastYear && wMonth === lastMonth) {
+      label = 'Last Month';
     } else {
-      // "Month Year"
-      const d = new Date(w.date + 'T00:00:00');
-      label = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+      label = `${MONTH_NAMES[wMonth]} ${wYear}`;
     }
 
     let arr = groups.get(label);
@@ -66,6 +61,61 @@ export function groupWorkoutsByDate(
   }
 
   return Array.from(groups.entries()).map(([label, wks]) => ({ label, workouts: wks }));
+}
+
+// ── Weekly streak ────────────────────────────────────────────────────
+
+export interface WeekDay {
+  label: string;  // 'M' | 'T' | 'W' | 'T' | 'F' | 'S' | 'S'
+  date: string;   // ISO yyyy-mm-dd
+  hasWorkout: boolean;
+  isToday: boolean;
+}
+
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+/**
+ * Returns the Mon–Sun week days for the week containing `todayStr`,
+ * with `hasWorkout` true for days that have at least one workout.
+ * Reads from all workouts (unfiltered).
+ */
+export function getWeekStreak(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): WeekDay[] {
+  const today = new Date(todayStr + 'T00:00:00');
+  const day = today.getDay(); // 0=Sun…6=Sat
+  const diffToMonday = day === 0 ? 6 : day - 1;
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - diffToMonday);
+
+  // Build set of workout dates this week for fast lookup
+  const workoutDates = new Set(allWorkouts.map(w => w.date));
+
+  return DAY_LABELS.map((label, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateStr = d.toISOString().slice(0, 10);
+    return {
+      label,
+      date: dateStr,
+      hasWorkout: workoutDates.has(dateStr),
+      isToday: dateStr === todayStr,
+    };
+  });
+}
+
+/**
+ * Returns the count of workouts in the Mon–Sun week containing `todayStr`.
+ */
+export function getWeekWorkoutCount(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): number {
+  const days = getWeekStreak(allWorkouts, todayStr);
+  const weekDates = new Set(days.map(d => d.date));
+  return allWorkouts.filter(w => weekDates.has(w.date)).length;
 }
 
 // ── Tag aggregation ──────────────────────────────────────────────────
