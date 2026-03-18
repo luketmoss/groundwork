@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { SetRow } from './set-row';
 import { LastTimePanel } from './last-time-panel';
 import { ALL_SECTIONS } from './section-management';
@@ -66,6 +66,7 @@ export function ExerciseRow({
   totalExercises,
 }: Props) {
   const isWarmup = exercise.section === 'warmup';
+  const lastTimeToggleRef = useRef<HTMLButtonElement>(null);
   const [showLastTime, setShowLastTime] = useState(false);
   const [flashSets, setFlashSets] = useState(false);
   const [showSectionPicker, setShowSectionPicker] = useState(false);
@@ -244,6 +245,7 @@ export function ExerciseRow({
         </button>
         <div class="tracker-exercise-actions">
           <button
+            ref={lastTimeToggleRef}
             type="button"
             class="last-time-toggle exercise-toolbar-btn"
             onClick={() => setShowLastTime(!showLastTime)}
@@ -275,6 +277,10 @@ export function ExerciseRow({
             onCopyDown(lastTimeSets);
             setFlashSets(true);
             setTimeout(() => setFlashSets(false), 600);
+          }}
+          onClose={() => {
+            setShowLastTime(false);
+            lastTimeToggleRef.current?.focus();
           }}
         />
       )}

@@ -6,6 +6,7 @@ interface Props {
   exerciseName: string;
   currentWorkoutId: string;
   onCopyDown: (lastTimeSets: SetWithRow[]) => void;
+  onClose: () => void;
 }
 
 function effortClass(effort: string): string {
@@ -13,7 +14,7 @@ function effortClass(effort: string): string {
   return `effort-${effort.toLowerCase()}`;
 }
 
-export function LastTimePanel({ exerciseId, exerciseName, currentWorkoutId, onCopyDown }: Props) {
+export function LastTimePanel({ exerciseId, exerciseName, currentWorkoutId, onCopyDown, onClose }: Props) {
   const data = getLastTimeData(exerciseId, currentWorkoutId);
 
   if (!data) {
@@ -43,13 +44,22 @@ export function LastTimePanel({ exerciseId, exerciseName, currentWorkoutId, onCo
           </div>
         ))}
       </div>
-      <button
-        class="copy-down-btn"
-        onClick={() => onCopyDown(data.sets)}
-        aria-label={`Copy previous workout data for ${exerciseName}`}
-      >
-        Copy Down
-      </button>
+      <div class="last-time-actions">
+        <button
+          class="copy-down-btn"
+          onClick={() => onCopyDown(data.sets)}
+          aria-label={`Copy previous workout data for ${exerciseName}`}
+        >
+          Copy Down
+        </button>
+        <button
+          class="last-time-close-btn"
+          onClick={onClose}
+          aria-label="Close history"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 }
