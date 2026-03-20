@@ -1,6 +1,12 @@
 # Groundwork — Personal Workout Tracker
 
-A mobile-first workout tracker powered by Google Sheets. Track weight training (with templates, supersets, effort tracking), stretching, biking, and yoga — all backed by a shared Google Sheet for portable, human-readable data.
+A mobile-first workout tracker powered by Google Sheets. Track weight training (with templates, supersets, effort tracking), stretching, biking, and hiking — all backed by a shared Google Sheet for portable, human-readable data.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+ (includes npm)
+- Git
+- A Google account (for OAuth and Sheets access)
 
 ## Architecture
 
@@ -20,7 +26,7 @@ A mobile-first workout tracker powered by Google Sheets. Track weight training (
 ## Features
 
 - **Weight Training**: Templates with supersets, rep ranges, effort tracking (Easy/Medium/Hard)
-- **Other Workouts**: Stretching, biking, yoga with notes and timestamps
+- **Other Workouts**: Stretching, biking, hiking with notes and timestamps
 - **Exercise Library**: Multi-tag categorization (Push, Pull, Legs, Chest, Compound, etc.)
 - **Workout Templates**: Named templates with sections (warmup, primary, superset, burnout)
 - **Copy Previous**: Clone past workouts with "last time" reference for progressive overload
@@ -39,6 +45,9 @@ groundwork/
 │   │   ├── router/       # Signal-based hash router
 │   │   └── state/        # Preact signals store + actions
 │   └── public/
+├── scripts/              # Utility scripts
+│   ├── seed-data.mjs     # Populate sheet with exercises & templates
+│   └── sync-exercise-names.mjs  # Sync exercise names across tabs
 └── .github/workflows/    # GitHub Pages deployment
 ```
 
@@ -55,6 +64,20 @@ Create a Google Sheet named **"Groundwork"** with five tabs:
 | **Workouts** | id, Date, Time, Type, Name, template_id, Notes, Duration (min), Created, copied_from |
 | **Sets** | workout_id, exercise_id, Exercise Name, Section, Exercise Order, Set #, Planned Reps, Weight (lbs), Reps, Effort, Notes |
 | **Config** | Key, Value |
+
+### 1b. Seed Data (Optional)
+
+Once your sheet exists, populate it with a starter exercise library and templates:
+
+```bash
+# Preview what will be written (no API calls)
+node scripts/seed-data.mjs --dry-run
+
+# Seed the sheet (requires a Google OAuth access token)
+node scripts/seed-data.mjs <ACCESS_TOKEN>
+```
+
+> **Note:** The script has a hardcoded spreadsheet ID. Update the `SPREADSHEET_ID` constant in `scripts/seed-data.mjs` to match your sheet before running.
 
 ### 2. Google Cloud Project
 
@@ -77,6 +100,22 @@ npm run dev
 
 Open http://localhost:5173/groundwork/ and sign in with Google.
 
+### Demo Mode
+
+To explore the app without setting up Google Cloud or a spreadsheet, use demo mode:
+
+```
+http://localhost:5173/groundwork/?demo=true
+```
+
+Demo mode provides a fake user and sample data. No Google auth required — changes are not persisted.
+
+You can also enable it via `.env.local`:
+
+```
+VITE_DEMO_MODE=true
+```
+
 ### 4. GitHub Pages (Production)
 
 1. Set GitHub Pages source to **GitHub Actions** in repo settings
@@ -84,6 +123,16 @@ Open http://localhost:5173/groundwork/ and sign in with Google.
    - `VITE_GOOGLE_CLIENT_ID` — your OAuth client ID
    - `VITE_SPREADSHEET_ID` — your Google Sheet ID
 3. Push to `main` — the workflow builds and deploys automatically
+
+## Development
+
+```bash
+cd frontend
+npm test              # run tests (vitest)
+npm run test:watch    # watch mode
+npx tsc --noEmit      # type-check without emitting
+npm run build         # production build to frontend/dist/
+```
 
 ## Google Sheets Schema
 
