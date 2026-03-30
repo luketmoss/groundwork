@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
-import { activeWorkoutSets, activeWarmupExercises, isEditMode, workouts } from '../../state/store';
+import { activeWorkoutSets, activeWarmupExercises, isEditMode, workouts, pendingSyncCount, isSyncing, showToast } from '../../state/store';
 import { saveSet, removeSet, finishWorkout, deleteWorkout, saveWorkoutEdits, exitEditMode } from '../../state/actions';
+import { flushQueue } from '../../api/sync-queue';
 import type { EditSetData } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
@@ -79,6 +80,22 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
   const [editDate, setEditDate] = useState(workout?.date || '');
   const [editName, setEditName] = useState(workout?.name || '');
   const [editDuration, setEditDuration] = useState(workout?.duration_min || '');
+
+  // Auto-sync on reconnect (AC3)
+  useEffect(() => {
+    if (!token) return;
+    const handleOnline = async () => {
+      if (pendingSyncCount.value === 0) return;
+      const result = await flushQueue(token);
+      if (result.synced > 0 && result.remaining === 0) {
+        showToast(`${result.synced} set${result.synced === 1 ? '' : 's'} saved`, 'success');
+      } else if (result.failed > 0) {
+        showToast('Some sets failed to sync — will retry on reconnect', 'error');
+      }
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [token]);
 
   // Initialize from signal, merging warmup exercises (list-only, no sets)
   useEffect(() => {
@@ -551,6 +568,16 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
 
   const handleFinish = async () => {
     if (!token) return;
+
+    // AC7: Confirm before finishing when there are unsynced sets in the queue
+    const queuedCount = pendingSyncCount.value;
+    if (queuedCount > 0) {
+      const ok = confirm(
+        `You have ${queuedCount} unsynced set${queuedCount === 1 ? '' : 's'}. Finish anyway? Your sets will sync next time you open the app.`,
+      );
+      if (!ok) return;
+    }
+
     setFinishing(true);
     try {
       await flushPendingSaves();
@@ -633,6 +660,29 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
           </button>
         )}
       </div>
+
+      {/* Sync status bar (AC2) — hidden when queue is empty */}
+      {pendingSyncCount.value > 0 && (
+        <button
+          class="sync-status-bar"
+          onClick={async () => {
+            if (isSyncing.value || !token) return;
+            const result = await flushQueue(token);
+            if (result.remaining === 0 && result.synced > 0) {
+              showToast(`${result.synced} set${result.synced === 1 ? '' : 's'} saved`, 'success');
+            } else if (result.failed > 0) {
+              showToast('Some sets failed to sync — will retry on reconnect', 'error');
+            }
+          }}
+          disabled={isSyncing.value}
+          aria-live="polite"
+          aria-label={`${pendingSyncCount.value} unsynced set${pendingSyncCount.value === 1 ? '' : 's'}, tap to sync now`}
+        >
+          {isSyncing.value
+            ? 'Syncing…'
+            : `${pendingSyncCount.value} unsynced — Sync now`}
+        </button>
+      )}
 
       {/* Edit mode metadata fields */}
       {editMode && (

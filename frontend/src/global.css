@@ -1390,6 +1390,28 @@ input, select, textarea {
   text-overflow: ellipsis;
 }
 
+.sync-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  margin-bottom: var(--space-sm);
+}
+
+.sync-status-bar:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .finish-form {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
