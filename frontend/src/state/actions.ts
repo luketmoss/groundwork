@@ -7,7 +7,7 @@ import { fetchWorkouts, fetchSets, createWorkout as createWorkoutApi, updateWork
 import { toLocalDateStr } from '../components/activities/activities-helpers';
 import { colorKeyFromName } from '../api/label-colors';
 import type { TemplateExerciseInput } from '../api/templates-api';
-import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, WorkoutType, WorkoutSet, SetWithRow } from '../api/types';
+import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise } from '../api/types';
 import { ReauthFailedError } from '../auth/reauth';
 
 function isReauthFailure(err: unknown): boolean {
@@ -250,7 +250,7 @@ export async function removeExercise(
 // ── Workouts ─────────────────────────────────────────────────────────
 
 export async function saveWorkoutForLater(
-  data: { type: WorkoutType; name: string; template_id?: string },
+  data: { type: WorkoutType; name: string; template_id?: string; exercises?: BuilderExercise[] },
   token: string,
 ): Promise<void> {
   try {
@@ -264,9 +264,11 @@ export async function saveWorkoutForLater(
     const withRow = { ...workout, sheetRow: workouts.value.length + 2 };
     workouts.value = [withRow, ...workouts.value];
 
-    // Pre-populate set structure from template (same as startWorkout)
+    // Pre-populate set structure from template or builder exercises
     if (data.template_id) {
       await prepopulateSetsFromTemplate(workout.id, data.template_id, token);
+    } else if (data.exercises && data.exercises.length > 0) {
+      await prepopulateSetsFromBuilder(workout.id, data.exercises, token);
     } else {
       activeWorkoutSets.value = [];
       activeWarmupExercises.value = [];
@@ -331,7 +333,7 @@ export async function startPlannedWorkout(
 }
 
 export async function startWorkout(
-  data: { type: WorkoutType; name: string; template_id?: string; copied_from?: string },
+  data: { type: WorkoutType; name: string; template_id?: string; copied_from?: string; exercises?: BuilderExercise[] },
   token: string,
 ): Promise<string> {
   try {
@@ -346,9 +348,11 @@ export async function startWorkout(
     workouts.value = [withRow, ...workouts.value];
     activeWorkoutId.value = workout.id;
 
-    // Pre-populate sets from template if applicable
+    // Pre-populate sets from template, builder exercises, or empty
     if (data.template_id) {
       await prepopulateSetsFromTemplate(workout.id, data.template_id, token);
+    } else if (data.exercises && data.exercises.length > 0) {
+      await prepopulateSetsFromBuilder(workout.id, data.exercises, token);
     } else {
       activeWorkoutSets.value = [];
       activeWarmupExercises.value = [];
@@ -425,6 +429,51 @@ async function prepopulateSetsFromTemplate(
   await appendSetsApi(newSets, token);
 
   // Re-fetch to get correct sheetRow values
+  const allSets = await fetchSets(token);
+  sets.value = allSets;
+  activeWorkoutSets.value = allSets.filter((s) => s.workout_id === workoutId);
+}
+
+async function prepopulateSetsFromBuilder(
+  workoutId: string,
+  builderExercises: BuilderExercise[],
+  token: string,
+): Promise<void> {
+  const newSets: WorkoutSet[] = [];
+
+  builderExercises.forEach((ex, index) => {
+    for (let s = 1; s <= ex.sets; s++) {
+      newSets.push({
+        workout_id: workoutId,
+        exercise_id: ex.exercise_id,
+        exercise_name: ex.exercise_name,
+        section: 'primary',
+        exercise_order: index + 1,
+        set_number: s,
+        planned_reps: ex.planned_reps,
+        weight: '',
+        reps: '',
+        effort: '',
+        notes: '',
+      });
+    }
+  });
+
+  activeWarmupExercises.value = [];
+
+  if (isDemo()) {
+    const baseRow = sets.value.length + 2;
+    const setsWithRows: SetWithRow[] = newSets.map((s, i) => ({
+      ...s,
+      effort: s.effort as SetWithRow['effort'],
+      sheetRow: baseRow + i,
+    }));
+    sets.value = [...sets.value, ...setsWithRows];
+    activeWorkoutSets.value = setsWithRows;
+    return;
+  }
+
+  await appendSetsApi(newSets, token);
   const allSets = await fetchSets(token);
   sets.value = allSets;
   activeWorkoutSets.value = allSets.filter((s) => s.workout_id === workoutId);

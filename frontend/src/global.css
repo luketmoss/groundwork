@@ -515,6 +515,98 @@ input, select, textarea {
   width: 100%;
 }
 
+/* ===== Workout Builder ===== */
+.builder-body {
+  padding-bottom: calc(var(--space-2xl) + 100px);
+}
+
+.builder-exercise-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-md);
+}
+
+.builder-exercise-row {
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+}
+
+.builder-exercise-row:first-child {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.builder-exercise-row:last-child {
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.builder-exercise-row:only-child {
+  border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.builder-exercise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.builder-exercise-name {
+  font-weight: 600;
+}
+
+.builder-remove-btn {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-base);
+  min-width: auto;
+}
+
+.builder-exercise-config {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.builder-exercise-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.builder-exercise-field label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.builder-exercise-field input {
+  width: 80px;
+}
+
+.builder-add-btn {
+  width: 100%;
+  margin-top: var(--space-md);
+}
+
+.builder-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+  z-index: 10;
+}
+
+.builder-footer-btn {
+  width: 100%;
+}
+
 .btn-ghost {
   display: inline-flex;
   align-items: center;
