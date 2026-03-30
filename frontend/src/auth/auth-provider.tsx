@@ -52,7 +52,7 @@ interface Props {
   children: ComponentChildren;
 }
 
-const DEMO_USER: UserInfo = { email: 'demo@groundwork.app', name: 'Demo User', picture: '' };
+const DEMO_USER: UserInfo = { email: 'demo@thrive.app', name: 'Demo User', picture: '' };
 
 export function AuthProvider({ children }: Props) {
   const demo = isDemo();

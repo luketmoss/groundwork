@@ -2,9 +2,17 @@ import { signal } from '@preact/signals';
 
 type ThemeChoice = 'light' | 'dark' | 'system';
 
-function getStoredTheme(): ThemeChoice {
+export function getStoredTheme(): ThemeChoice {
   try {
-    const val = localStorage.getItem('gw-theme');
+    // One-time migration: move gw-theme → thrive-theme for existing users
+    if (!localStorage.getItem('thrive-theme')) {
+      const legacy = localStorage.getItem('gw-theme');
+      if (legacy === 'light' || legacy === 'dark') {
+        localStorage.setItem('thrive-theme', legacy);
+        localStorage.removeItem('gw-theme');
+      }
+    }
+    const val = localStorage.getItem('thrive-theme');
     if (val === 'light' || val === 'dark') return val;
   } catch { /* ignore */ }
   return 'system';
@@ -22,9 +30,9 @@ function applyTheme(choice: ThemeChoice) {
   document.documentElement.setAttribute('data-theme', resolved);
   try {
     if (choice === 'system') {
-      localStorage.removeItem('gw-theme');
+      localStorage.removeItem('thrive-theme');
     } else {
-      localStorage.setItem('gw-theme', choice);
+      localStorage.setItem('thrive-theme', choice);
     }
   } catch { /* ignore */ }
 }
