@@ -1,4 +1,4 @@
-// Groundwork data types — mirrors Google Sheet column structure.
+// Thrive data types — mirrors Google Sheet column structure.
 
 export type WorkoutType = 'weight' | 'stretch' | 'bike' | 'hike';
 export type Effort = 'Easy' | 'Medium' | 'Hard';

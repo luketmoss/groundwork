@@ -1,4 +1,4 @@
-# Groundwork — Personal Workout Tracker
+# Thrive — Personal Workout Tracker
 
 ## Project Overview
 Personal workout tracker: Preact SPA → Google Sheets REST API.
@@ -24,7 +24,7 @@ Personal workout tracker: Preact SPA → Google Sheets REST API.
 - No backend server — SPA reads/writes Sheets API directly via OAuth
 
 ## Preview & Demo Mode
-- The app requires Google OAuth to function. For preview testing (QA, UX agents), use **demo mode** by navigating to `http://localhost:5173/groundwork/?demo=true` after starting the dev server.
+- The app requires Google OAuth to function. For preview testing (QA, UX agents), use **demo mode** by navigating to `http://localhost:5173/thrive/?demo=true` after starting the dev server.
 - Demo mode provides a fake user and skips Google auth. Changes are not persisted.
 
 ## Data Model

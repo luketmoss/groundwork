@@ -6,13 +6,21 @@
   <title>Thrive — Workout Tracker</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4f6ef7" />
-  <link rel="icon" type="image/svg+xml" sizes="any" href="groundwork-favicon.svg" />
-  <link rel="apple-touch-icon" href="groundwork-icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" sizes="any" href="thrive-favicon.svg" />
+  <link rel="apple-touch-icon" href="thrive-icon-192.svg" />
   <!-- Apply data-theme before first paint to prevent flash of wrong theme -->
   <script>
     (function() {
       try {
-        var t = localStorage.getItem('gw-theme');
+        // One-time migration: move gw-theme → thrive-theme for existing users
+        if (!localStorage.getItem('thrive-theme')) {
+          var legacy = localStorage.getItem('gw-theme');
+          if (legacy === 'dark' || legacy === 'light') {
+            localStorage.setItem('thrive-theme', legacy);
+            localStorage.removeItem('gw-theme');
+          }
+        }
+        var t = localStorage.getItem('thrive-theme');
         var resolved;
         if (t === 'dark') {
           resolved = 'dark';

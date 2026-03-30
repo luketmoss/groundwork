@@ -6,13 +6,13 @@ export function LoginScreen() {
     <div class="login-screen">
       <div class="login-card">
         <img
-          src={`${import.meta.env.BASE_URL}groundwork-favicon.svg`}
+          src={`${import.meta.env.BASE_URL}thrive-favicon.svg`}
           alt=""
           class="login-icon"
           width="64"
           height="64"
         />
-        <h1>Groundwork</h1>
+        <h1>Thrive</h1>
         <p>Personal Workout Tracker</p>
         <button class="login-btn" onClick={login}>
           Sign in with Google
