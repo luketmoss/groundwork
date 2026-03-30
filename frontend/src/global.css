@@ -58,11 +58,11 @@
   --color-text: #1f1f1f;
   --color-text-secondary: #5f6368;
   --color-text-muted: #8e99a4;
-  --color-primary: #D4400A;
-  --color-primary-hover: #B83500;
+  --color-primary: #FF6B35;
+  --color-primary-hover: #D4400A;
   --color-primary-light: #fff0eb;
-  --color-primary-rgb: 212, 64, 10;
-  --color-primary-focus-ring: rgba(212, 64, 10, 0.25);
+  --color-primary-rgb: 255, 107, 53;
+  --color-primary-focus-ring: rgba(255, 107, 53, 0.25);
   --color-danger: #d32f2f;
   --color-danger-hover: #b71c1c;
   --color-success: #2e7d32;

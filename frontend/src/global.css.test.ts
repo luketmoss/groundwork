@@ -41,20 +41,20 @@ describe('AC1: Primary color tokens — light mode', () => {
   let lightBlock: string;
   beforeAll(() => { lightBlock = extractBlock(cssText, '[data-theme="light"]'); });
 
-  it('--color-primary is #D4400A', () => {
-    expect(getToken(lightBlock, '--color-primary')).toBe('#D4400A');
+  it('--color-primary is #FF6B35', () => {
+    expect(getToken(lightBlock, '--color-primary')).toBe('#FF6B35');
   });
-  it('--color-primary-hover is #B83500', () => {
-    expect(getToken(lightBlock, '--color-primary-hover')).toBe('#B83500');
+  it('--color-primary-hover is #D4400A', () => {
+    expect(getToken(lightBlock, '--color-primary-hover')).toBe('#D4400A');
   });
   it('--color-primary-light is #fff0eb', () => {
     expect(getToken(lightBlock, '--color-primary-light')).toBe('#fff0eb');
   });
-  it('--color-primary-rgb is 212, 64, 10', () => {
-    expect(getToken(lightBlock, '--color-primary-rgb')).toBe('212, 64, 10');
+  it('--color-primary-rgb is 255, 107, 53', () => {
+    expect(getToken(lightBlock, '--color-primary-rgb')).toBe('255, 107, 53');
   });
-  it('--color-primary-focus-ring is rgba(212, 64, 10, 0.25)', () => {
-    expect(getToken(lightBlock, '--color-primary-focus-ring')).toBe('rgba(212, 64, 10, 0.25)');
+  it('--color-primary-focus-ring is rgba(255, 107, 53, 0.25)', () => {
+    expect(getToken(lightBlock, '--color-primary-focus-ring')).toBe('rgba(255, 107, 53, 0.25)');
   });
 });
 
