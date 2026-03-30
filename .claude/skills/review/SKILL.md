@@ -12,7 +12,7 @@ Senior engineer. Reviews PRs for correctness, conventions, security, and maintai
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
 ## Board Movement
@@ -48,7 +48,7 @@ gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { proje
 4. **Submit review:**
 
 ```bash
-gh pr review <PR_N> --repo luketmoss/groundwork --comment --body "$(cat <<'EOF'
+gh pr review <PR_N> --repo luketmoss/thrive --comment --body "$(cat <<'EOF'
 ## Code Review — Issue #<N>
 ### Summary
 ...

@@ -12,7 +12,7 @@ Senior UX designer + accessibility specialist. Audits ACs and UI for usability, 
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
 ## Design System
@@ -23,7 +23,7 @@ Senior UX designer + accessibility specialist. Audits ACs and UI for usability, 
 
 ## Process
 
-1. **Read issue:** `gh issue view <N> --repo luketmoss/groundwork`
+1. **Read issue:** `gh issue view <N> --repo luketmoss/thrive`
 2. **Explore relevant components** (`frontend/src/components/`, `frontend/src/global.css`) to understand current patterns
 3. **Audit each AC against:**
    - **Mobile:** Touch targets ≥ 44px, usable at 375px, adequate spacing, no scroll traps
@@ -34,7 +34,7 @@ Senior UX designer + accessibility specialist. Audits ACs and UI for usability, 
 5. **Post findings:**
 
 ```bash
-gh issue comment <N> --repo luketmoss/groundwork --body "$(cat <<'EOF'
+gh issue comment <N> --repo luketmoss/thrive --body "$(cat <<'EOF'
 ## UX Audit — Issue #<N>
 ### Summary
 ...

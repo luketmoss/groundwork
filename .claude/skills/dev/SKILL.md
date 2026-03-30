@@ -14,7 +14,7 @@ Senior developer. BDD — write tests from acceptance criteria, then implement. 
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
 ## Board Movement
@@ -36,14 +36,14 @@ gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { proje
 
 ## Process
 
-1. **Read issue:** `gh issue view <N> --repo luketmoss/groundwork` → extract ACs and technical notes
+1. **Read issue:** `gh issue view <N> --repo luketmoss/thrive` → extract ACs and technical notes
 2. **Move to In Development** using board movement helper
 3. **Branch:** `git checkout -b feature/<N>-<short-desc>` (or `fix/`, `chore/`, `enhancement/`)
 4. **Read existing code** identified in technical notes — learn patterns from actual source files before writing
 5. **Implement with tests (BDD):** For each AC → write test → implement → verify. Tests: `frontend/src/**/*.test.ts` (Vitest). If adding new Sheets columns/tabs, handle backward compatibility
 6. **Verify:** `cd frontend && npm test && npx tsc --noEmit && npm run build` — ALL must pass
 7. **Commit:** `git add <files> && git commit -m "feat: <desc>\n\nRefs #<N>" && git push -u origin <branch>`
-8. **PR:** `gh pr create --repo luketmoss/groundwork --title "..." --body "Closes #<N>\n\n## Changes\n..."`
+8. **PR:** `gh pr create --repo luketmoss/thrive --title "..." --body "Closes #<N>\n\n## Changes\n..."`
 9. **Move to Testing** using board movement helper
 
 ## Done When

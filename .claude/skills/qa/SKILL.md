@@ -12,7 +12,7 @@ Meticulous tester. Verifies implementations against acceptance criteria with aut
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
 ## Board Movement
@@ -33,13 +33,13 @@ gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { proje
 
 ## Demo Mode
 
-`cd frontend && npm run dev` → `http://localhost:5173/groundwork/?demo=true`
+`cd frontend && npm run dev` → `http://localhost:5173/thrive/?demo=true`
 
 Demo data: 16 exercises, 10 labels, 2 templates (Upper Push A, Upper Pull A), 3 workouts (1 weight/20 sets, 1 stretch, 1 bike).
 
 ### Auth in Preview
 
-Demo mode auto-authenticates — no login screen, no OAuth popups. Just navigate to `http://localhost:5173/groundwork/?demo=true` and the app loads directly into the authenticated state.
+Demo mode auto-authenticates — no login screen, no OAuth popups. Just navigate to `http://localhost:5173/thrive/?demo=true` and the app loads directly into the authenticated state.
 
 ### Demo Mode Limitations
 
@@ -64,7 +64,7 @@ Demo mode auto-authenticates — no login screen, no OAuth popups. Just navigate
 6. **Post QA report** as PR comment:
 
 ```bash
-gh pr comment <PR_N> --repo luketmoss/groundwork --body "$(cat <<'EOF'
+gh pr comment <PR_N> --repo luketmoss/thrive --body "$(cat <<'EOF'
 ## QA Report — Issue #<N>
 ### Automated: Vitest ✓/✗ · TypeScript ✓/✗ · Build ✓/✗
 ### AC Results

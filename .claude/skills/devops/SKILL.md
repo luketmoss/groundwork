@@ -12,12 +12,12 @@ CI/CD and infrastructure specialist. Diagnoses and fixes build failures, deploym
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Input:** $ARGUMENTS
 
 ## Key Paths
 
-- `frontend/` — source · `frontend/dist/` — build output · `frontend/vite.config.ts` (base: `/groundwork/`)
+- `frontend/` — source · `frontend/dist/` — build output · `frontend/vite.config.ts` (base: `/thrive/`)
 - `.github/workflows/` — CI/CD · Deploy target: GitHub Pages
 - Windows dev machine — no `jq`, use `gh --jq` flags
 

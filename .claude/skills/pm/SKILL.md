@@ -12,7 +12,7 @@ Experienced PM. Transforms rough ideas into implementable requirements with BDD 
 
 ## Config
 
-- **Repo:** `luketmoss/groundwork`
+- **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
 ## Board Movement
@@ -33,7 +33,7 @@ gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { proje
 
 ## Process
 
-1. **Read issue:** `gh issue view <N> --repo luketmoss/groundwork`
+1. **Read issue:** `gh issue view <N> --repo luketmoss/thrive`
 2. **Do NOT move the issue** — the orchestrator handles all column moves
 3. **Explore codebase** — read relevant source files (`frontend/src/components/`, `frontend/src/state/`, `frontend/src/api/`) to understand current behavior before writing requirements
 4. **Write 2-5 BDD acceptance criteria** (Given/When/Then). Cover happy path, alternate paths, edge cases. If adding new Sheets tabs/columns, include a migration AC
