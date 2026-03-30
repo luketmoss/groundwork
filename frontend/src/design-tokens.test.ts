@@ -42,8 +42,8 @@ describe('AC2: background and border-light tokens (light mode)', () => {
   it('--color-bg is #f0f2f5', () => {
     expect(tokenValue(lightBlock, '--color-bg')).toBe('#f0f2f5');
   });
-  it('--color-border-light is #e4e8ec', () => {
-    expect(tokenValue(lightBlock, '--color-border-light')).toBe('#e4e8ec');
+  it('--color-border-light is #e8eaed', () => {
+    expect(tokenValue(lightBlock, '--color-border-light')).toBe('#e8eaed');
   });
 });
 
