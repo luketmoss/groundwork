@@ -1,4 +1,5 @@
 import { exercises, labels, templates, workouts, sets, loading, activeWorkoutId, activeWorkoutSets, activeWarmupExercises, isEditMode, showToast } from './store';
+import { enqueueSet, initPendingCount } from '../api/sync-queue';
 import { isDemo } from '../api/demo-data';
 import { fetchExercises, createExercise, updateExercise as updateExerciseApi, deleteExercise as deleteExerciseApi } from '../api/exercises-api';
 import { fetchLabels, createLabel as createLabelApi, updateLabel as updateLabelApi, deleteLabel as deleteLabelApi, appendLabels } from '../api/labels-api';
@@ -9,6 +10,7 @@ import { colorKeyFromName } from '../api/label-colors';
 import type { TemplateExerciseInput } from '../api/templates-api';
 import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise } from '../api/types';
 import { ReauthFailedError } from '../auth/reauth';
+import { SheetsApiError } from '../api/sheets';
 
 function isReauthFailure(err: unknown): boolean {
   return err instanceof ReauthFailedError;
@@ -46,6 +48,7 @@ export async function loadInitialData(token: string): Promise<void> {
       labels.value = labelData;
     }
 
+    initPendingCount();
     loading.value = false;
   } catch (err) {
     if (isReauthFailure(err)) return; // auth-provider handles this
@@ -524,6 +527,17 @@ export async function saveSet(
     }
   } catch (err) {
     if (isReauthFailure(err)) throw err;
+    // Network failure (fetch rejection) or non-401 HTTP error → queue silently (AC1, AC6)
+    if (err instanceof TypeError || (err instanceof SheetsApiError && err.status !== 401)) {
+      const existing = activeWorkoutSets.value.find(
+        (s) => s.workout_id === set.workout_id &&
+               s.exercise_id === set.exercise_id &&
+               s.exercise_order === set.exercise_order &&
+               s.set_number === set.set_number,
+      );
+      enqueueSet({ ...set, sheetRow: existing?.sheetRow ?? -1 });
+      throw err; // re-throw so caller leaves set as unsaved
+    }
     showToast('Failed to save set', 'error');
     throw err;
   }

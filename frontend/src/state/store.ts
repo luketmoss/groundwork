@@ -80,6 +80,10 @@ export function labelUsageCount(labelName: string): number {
   ).length;
 }
 
+// Offline sync queue state
+export const pendingSyncCount = signal(0);
+export const isSyncing = signal(false);
+
 // Toast system
 export interface ToastMessage {
   id: number;
