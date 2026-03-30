@@ -4,7 +4,7 @@
   "description": "Personal workout tracker powered by Google Sheets",
   "start_url": "/thrive/",
   "display": "standalone",
-  "background_color": "#f8f9fa",
+  "background_color": "#f0f2f5",
   "theme_color": "#FF6B35",
   "icons": [
     {

@@ -53,20 +53,22 @@
   --color-bg: #f0f2f5;
   --color-surface: #ffffff;
   --color-surface-raised: #ffffff;
-  --color-border: #e2e6ea;
-  --color-border-light: #e4e8ec;
-  --color-text: #1a1d21;
-  --color-text-secondary: #5f6b7a;
+  --color-border: #dadce0;
+  --color-border-light: #e8eaed;
+  --color-text: #1f1f1f;
+  --color-text-secondary: #5f6368;
   --color-text-muted: #8e99a4;
-  --color-primary: #4f6ef7;
-  --color-primary-hover: #3b5de5;
-  --color-primary-light: #eef1fe;
-  --color-danger: #e5484d;
-  --color-danger-hover: #d13438;
-  --color-success: #30a46c;
-  --color-success-light: #e9f9f1;
-  --color-warning: #f5a623;
-  --color-warning-light: #fef7e8;
+  --color-primary: #D4400A;
+  --color-primary-hover: #B83500;
+  --color-primary-light: #fff0eb;
+  --color-primary-rgb: 212, 64, 10;
+  --color-primary-focus-ring: rgba(212, 64, 10, 0.25);
+  --color-danger: #d32f2f;
+  --color-danger-hover: #b71c1c;
+  --color-success: #2e7d32;
+  --color-success-light: #e8f5e9;
+  --color-warning: #a05d00;
+  --color-warning-light: #fff8e1;
   --color-overlay: rgba(0, 0, 0, 0.4);
   --color-shadow: rgba(0, 0, 0, 0.08);
   --color-shadow-strong: rgba(0, 0, 0, 0.15);
@@ -82,22 +84,24 @@
 
 /* ===== Dark Theme ===== */
 [data-theme="dark"] {
-  --color-bg: #111113;
+  --color-bg: #121212;
   --color-surface: #1a1a1e;
-  --color-surface-raised: #232328;
-  --color-border: #2e2e35;
+  --color-surface-raised: #252528;
+  --color-border: #3c3c3c;
   --color-border-light: #25252b;
-  --color-text: #edeef0;
-  --color-text-secondary: #9ba1a6;
+  --color-text: #e8eaed;
+  --color-text-secondary: #9aa0a6;
   --color-text-muted: #6f7681;
-  --color-primary: #6b8aff;
-  --color-primary-hover: #5a7af5;
-  --color-primary-light: #1e2440;
-  --color-danger: #e5484d;
-  --color-danger-hover: #f16a6d;
-  --color-success: #3dd68c;
-  --color-success-light: #122b21;
-  --color-warning: #f5a623;
+  --color-primary: #FF6B35;
+  --color-primary-hover: #FF9A76;
+  --color-primary-light: #2d1a10;
+  --color-primary-rgb: 255, 107, 53;
+  --color-primary-focus-ring: rgba(255, 107, 53, 0.3);
+  --color-danger: #ef5350;
+  --color-danger-hover: #e53935;
+  --color-success: #66bb6a;
+  --color-success-light: #1b5e20;
+  --color-warning: #ffb74d;
   --color-warning-light: #2d2210;
   --color-overlay: rgba(0, 0, 0, 0.6);
   --color-shadow: rgba(0, 0, 0, 0.25);
@@ -828,7 +832,7 @@ input, select, textarea {
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
 }
 
 .form-textarea {
@@ -964,7 +968,7 @@ input, select, textarea {
 
 .tag-input-wrapper:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
 }
 
 .tag-input-field {
