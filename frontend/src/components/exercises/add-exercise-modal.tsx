@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useRef, useEffect } from 'preact/hooks';
 import { exercises as exercisesSignal, allTags } from '../../state/store';
 import { addExercise } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
@@ -16,6 +16,13 @@ export function AddExerciseModal({ onSelect, onClose }: AddExerciseModalProps) {
   const [search, setSearch] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!showCreateForm) {
+      searchRef.current?.focus();
+    }
+  }, [showCreateForm]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -69,6 +76,7 @@ export function AddExerciseModal({ onSelect, onClose }: AddExerciseModalProps) {
         ) : (
           <>
             <input
+              ref={searchRef}
               class="form-input search-input"
               type="text"
               placeholder="Search exercises..."
