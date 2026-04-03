@@ -6,7 +6,8 @@
       "Bash(ls -la /d/Projects/code/hive/*.md)",
       "Bash(mkdir -p /d/Projects/code/groundwork/.claude/skills/pm)",
       "Bash(mkdir -p /d/Projects/code/groundwork/.claude/skills/dev)",
-      "Bash(mkdir -p /d/Projects/code/groundwork/.github/workflows)"
+      "Bash(mkdir -p /d/Projects/code/groundwork/.github/workflows)",
+      "mcp__hive__hive_list_labels"
     ]
   }
 }

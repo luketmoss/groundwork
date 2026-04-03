@@ -4,8 +4,8 @@
     {
       "name": "frontend",
       "runtimeExecutable": "node.exe",
-      "runtimeArgs": ["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js", "vite", "--port", "5173"],
-      "port": 5173,
+      "runtimeArgs": ["C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js", "vite", "--port", "5174"],
+      "port": 5174,
       "cwd": "frontend"
     }
   ]
