@@ -3,12 +3,14 @@
 ## Project Overview
 Personal workout tracker: Preact SPA → Google Sheets REST API.
 - **frontend/**: Preact SPA (built with Vite) — deployed to GitHub Pages
+- **mcp-server/**: local MCP server letting AI agents read, analyze, schedule and repair workout data. Talks to the same sheet via a Google service account (the SPA's OAuth token isn't available outside the browser). Row mapping in `mcp-server/domain.js` mirrors `frontend/src/api/*.ts` — change both together.
 
 ## Key Commands
 - `cd frontend && npm run dev` — start Vite dev server (localhost:5173)
 - `cd frontend && npm run build` — production build to frontend/dist/
 - `cd frontend && npm test` — run frontend tests (vitest)
 - `cd frontend && npx tsc --noEmit` — TypeScript type checking
+- `cd mcp-server && npm test` — run MCP server tests (node --test)
 
 ## Environment
 - **Windows machine** — `jq` is NOT available. For JSON parsing in shell commands, use `gh` built-in `--jq` flags. Never pipe to a standalone `jq` command.
