@@ -4,16 +4,33 @@ import { isDemo } from '../api/demo-data';
 import { fetchExercises, createExercise, updateExercise as updateExerciseApi, deleteExercise as deleteExerciseApi } from '../api/exercises-api';
 import { fetchLabels, createLabel as createLabelApi, updateLabel as updateLabelApi, deleteLabel as deleteLabelApi, appendLabels } from '../api/labels-api';
 import { fetchTemplateRows, groupTemplateRows, createTemplate as createTemplateApi, updateTemplate as updateTemplateApi, deleteTemplate as deleteTemplateApi, updateExerciseNameInTemplates } from '../api/templates-api';
-import { fetchWorkouts, fetchSets, createWorkout as createWorkoutApi, updateWorkout as updateWorkoutApi, deleteWorkoutRows, appendSet as appendSetApi, appendSets as appendSetsApi, updateSet as updateSetApi, deleteSetRow, updateExerciseNameInSets } from '../api/workouts-api';
+import { fetchWorkouts, fetchSets, createWorkout as createWorkoutApi, updateWorkout as updateWorkoutApi, deleteWorkoutRows, appendSet as appendSetApi, appendSets as appendSetsApi, updateSet as updateSetApi, deleteSetRow, updateExerciseNameInSets, findWorkoutRow, WorkoutRowMismatchError } from '../api/workouts-api';
 import { toLocalDateStr } from '../components/activities/activities-helpers';
 import { colorKeyFromName } from '../api/label-colors';
 import type { TemplateExerciseInput } from '../api/templates-api';
-import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise } from '../api/types';
+import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, Workout, WorkoutWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise } from '../api/types';
 import { ReauthFailedError } from '../auth/reauth';
 import { SheetsApiError } from '../api/sheets';
 
 function isReauthFailure(err: unknown): boolean {
   return err instanceof ReauthFailedError;
+}
+
+const WORKOUT_OUT_OF_SYNC_MESSAGE = "Couldn't save — this workout is out of sync. Reload and try again.";
+
+/**
+ * Resolve a newly-created workout's true sheetRow instead of guessing
+ * `workouts.value.length + 2` — that guess is wrong whenever the local list
+ * doesn't exactly mirror the sheet (e.g. right after a delete elsewhere in
+ * the session). Falls back to the guess in demo mode, where there is no
+ * real sheet to re-fetch from.
+ */
+async function resolveNewWorkoutRow(workout: Workout, token: string): Promise<WorkoutWithRow> {
+  if (isDemo()) {
+    return { ...workout, sheetRow: workouts.value.length + 2 };
+  }
+  const found = await findWorkoutRow(workout.id, token);
+  return found ?? { ...workout, sheetRow: workouts.value.length + 2 };
 }
 
 /** Parse a set range like "4-5" → 5 (upper bound), "3" → 3, "" → 3 (default). */
@@ -271,7 +288,7 @@ export async function saveWorkoutForLater(
       status: 'planned',
     }, token);
 
-    const withRow = { ...workout, sheetRow: workouts.value.length + 2 };
+    const withRow = await resolveNewWorkoutRow(workout, token);
     workouts.value = [withRow, ...workouts.value];
 
     // Pre-populate set structure from template or builder exercises
@@ -337,6 +354,10 @@ export async function startPlannedWorkout(
     return workoutId;
   } catch (err) {
     if (isReauthFailure(err)) throw err;
+    if (err instanceof WorkoutRowMismatchError) {
+      showToast(WORKOUT_OUT_OF_SYNC_MESSAGE, 'error');
+      throw err;
+    }
     showToast('Failed to start workout', 'error');
     throw err;
   }
@@ -355,7 +376,7 @@ export async function startWorkout(
       status: 'active',
     }, token);
 
-    const withRow = { ...workout, sheetRow: workouts.value.length + 2 };
+    const withRow = await resolveNewWorkoutRow(workout, token);
     workouts.value = [withRow, ...workouts.value];
     activeWorkoutId.value = workout.id;
 
@@ -643,6 +664,10 @@ export async function finishWorkout(
     showToast('Workout saved', 'success');
   } catch (err) {
     if (isReauthFailure(err)) throw err;
+    if (err instanceof WorkoutRowMismatchError) {
+      showToast(WORKOUT_OUT_OF_SYNC_MESSAGE, 'error');
+      throw err;
+    }
     showToast('Failed to finish workout', 'error');
     throw err;
   }
@@ -653,14 +678,38 @@ export async function deleteWorkout(
   token: string,
 ): Promise<void> {
   try {
-    const workout = workouts.value.find((w) => w.id === workoutId);
-    if (!workout) throw new Error('Workout not found');
+    // Corrupted data can have more than one row sharing an id (issue #95) —
+    // delete only the first matching row, not every row with this id.
+    const matches = workouts.value.filter((w) => w.id === workoutId);
+    if (matches.length === 0) throw new Error('Workout not found');
+    const workout = matches[0];
 
-    const workoutSets = sets.value.filter((s) => s.workout_id === workoutId);
+    // If a duplicate row still shares this id, its Sets rows may be the
+    // same rows the sibling duplicate needs — only remove Sets once this
+    // is the last row for this id.
+    const workoutSets = matches.length === 1
+      ? sets.value.filter((s) => s.workout_id === workoutId)
+      : [];
+
     await deleteWorkoutRows(workout, workoutSets, token);
 
-    workouts.value = workouts.value.filter((w) => w.id !== workoutId);
-    sets.value = sets.value.filter((s) => s.workout_id !== workoutId);
+    if (!isDemo()) {
+      // Re-fetch so every cached sheetRow reflects the post-delete row
+      // shift (Sheets moves every row below the deleted one up by one) —
+      // fixes the stale sheetRow bug behind issue #95.
+      const [freshWorkouts, freshSets] = await Promise.all([
+        fetchWorkouts(token),
+        fetchSets(token),
+      ]);
+      workouts.value = freshWorkouts;
+      sets.value = freshSets;
+      if (activeWorkoutId.value && activeWorkoutId.value !== workoutId) {
+        activeWorkoutSets.value = freshSets.filter((s) => s.workout_id === activeWorkoutId.value);
+      }
+    } else {
+      workouts.value = workouts.value.filter((w) => w.id !== workoutId);
+      sets.value = sets.value.filter((s) => s.workout_id !== workoutId);
+    }
 
     if (activeWorkoutId.value === workoutId) {
       activeWorkoutId.value = null;
@@ -738,7 +787,7 @@ export async function copyWorkout(
       copied_from: sourceWorkoutId,
     }, token);
 
-    const withRow = { ...workout, sheetRow: workouts.value.length + 2 };
+    const withRow = await resolveNewWorkoutRow(workout, token);
     workouts.value = [withRow, ...workouts.value];
     activeWorkoutId.value = workout.id;
 
@@ -792,7 +841,7 @@ export async function startSimpleWorkout(
       date: data.date,
     }, token);
 
-    const withRow = { ...workout, sheetRow: workouts.value.length + 2 };
+    const withRow = await resolveNewWorkoutRow(workout, token);
     workouts.value = [withRow, ...workouts.value];
     showToast('Workout saved', 'success');
   } catch (err) {
@@ -971,6 +1020,10 @@ export async function saveWorkoutEdits(
     showToast('Workout updated', 'success');
   } catch (err) {
     if (isReauthFailure(err)) throw err;
+    if (err instanceof WorkoutRowMismatchError) {
+      showToast(WORKOUT_OUT_OF_SYNC_MESSAGE, 'error');
+      throw err;
+    }
     showToast('Failed to save changes', 'error');
     throw err;
   }
@@ -1001,6 +1054,10 @@ export async function saveSimpleWorkoutEdits(
     showToast('Workout updated', 'success');
   } catch (err) {
     if (isReauthFailure(err)) throw err;
+    if (err instanceof WorkoutRowMismatchError) {
+      showToast(WORKOUT_OUT_OF_SYNC_MESSAGE, 'error');
+      throw err;
+    }
     showToast('Failed to save changes', 'error');
     throw err;
   }

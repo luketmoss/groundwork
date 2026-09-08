@@ -5,6 +5,19 @@ import { sheetsGet, sheetsAppend, sheetsUpdate, sheetsDeleteRow, getSheetId, wit
 import { isDemo, DEMO_WORKOUTS, DEMO_SETS } from './demo-data';
 import { toLocalDateStr } from '../components/activities/activities-helpers';
 
+/**
+ * Thrown when a workout write targets a sheetRow that no longer holds that
+ * workout's id — the cached row index went stale (e.g. a row shift from a
+ * delete elsewhere in the same session). Writing anyway would silently
+ * clobber a different workout's row (see issue #95).
+ */
+export class WorkoutRowMismatchError extends Error {
+  constructor(public workoutId: string) {
+    super(`Workout row for id "${workoutId}" could not be verified — it may be out of sync`);
+    this.name = 'WorkoutRowMismatchError';
+  }
+}
+
 // ── Workouts tab (A:K) ──────────────────────────────────────────────
 
 export async function fetchWorkouts(token: string): Promise<WorkoutWithRow[]> {
@@ -27,6 +40,18 @@ export async function fetchWorkouts(token: string): Promise<WorkoutWithRow[]> {
       sheetRow: i + 2,
     }));
   });
+}
+
+/**
+ * Look up a single workout's current sheetRow by id. Used right after
+ * creating a workout so callers don't have to guess `workouts.value.length + 2`
+ * — that guess is only correct while the local list exactly mirrors the
+ * sheet, which a prior delete in the same session can silently break (see
+ * issue #95).
+ */
+export async function findWorkoutRow(workoutId: string, token: string): Promise<WorkoutWithRow | null> {
+  const all = await fetchWorkouts(token);
+  return all.find((w) => w.id === workoutId) ?? null;
 }
 
 export async function createWorkout(
@@ -81,8 +106,17 @@ export async function updateWorkout(
 ): Promise<void> {
   if (isDemo()) return;
 
-  await withReauth(token, (t) =>
-    sheetsUpdate(`Workouts!A${sheetRow}:K${sheetRow}`, [[
+  await withReauth(token, async (t) => {
+    // Verify the row still belongs to this workout before overwriting it —
+    // a stale sheetRow (e.g. after a delete shifted rows) would otherwise
+    // silently clobber a different workout's data (see issue #95).
+    const idCell = await sheetsGet(`Workouts!A${sheetRow}:A${sheetRow}`, t);
+    const rowId = idCell[0]?.[0];
+    if (rowId !== workout.id) {
+      throw new WorkoutRowMismatchError(workout.id);
+    }
+
+    await sheetsUpdate(`Workouts!A${sheetRow}:K${sheetRow}`, [[
       workout.id,
       workout.date,
       workout.time,
@@ -94,8 +128,8 @@ export async function updateWorkout(
       workout.created,
       workout.copied_from,
       workout.status,
-    ]], t),
-  );
+    ]], t);
+  });
 }
 
 export async function deleteWorkoutRows(
