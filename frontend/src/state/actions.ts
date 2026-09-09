@@ -277,7 +277,7 @@ export async function removeExercise(
 // ── Workouts ─────────────────────────────────────────────────────────
 
 export async function saveWorkoutForLater(
-  data: { type: WorkoutType; name: string; template_id?: string; exercises?: BuilderExercise[] },
+  data: { type: WorkoutType; name: string; template_id?: string; exercises?: BuilderExercise[]; date?: string },
   token: string,
 ): Promise<void> {
   try {
@@ -285,6 +285,7 @@ export async function saveWorkoutForLater(
       type: data.type,
       name: data.name,
       template_id: data.template_id,
+      date: data.date,
       status: 'planned',
     }, token);
 

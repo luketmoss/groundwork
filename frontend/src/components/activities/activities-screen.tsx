@@ -13,6 +13,8 @@ import {
   getMonthWorkoutCount,
   getMonthTotalMinutes,
   toLocalDateStr,
+  formatPlannedDate,
+  isOverdue,
 } from './activities-helpers';
 import { LabelBadge } from '../shared/label-badge';
 
@@ -26,6 +28,18 @@ const TYPE_COLORS: Record<string, { light: string; dark: string }> = {
 
 function pluralWorkout(n: number): string {
   return `${n} ${n === 1 ? 'workout' : 'workouts'}`;
+}
+
+function pluralExercise(n: number): string {
+  return `${n} exercise${n !== 1 ? 's' : ''}`;
+}
+
+/**
+ * Spoken form of a scheduled-date label. Relative words read naturally in
+ * lower case mid-sentence; absolute dates keep their capitalisation.
+ */
+function spokenDate(label: string): string {
+  return ['Today', 'Tomorrow', 'Yesterday'].includes(label) ? label.toLowerCase() : label;
 }
 
 export function ActivitiesScreen() {
@@ -110,17 +124,19 @@ export function ActivitiesScreen() {
         <div class="planned-section">
           <div class="date-group-header first">In Progress</div>
           {activeWorkouts.value.map((w) => (
-            <div
+            <button
+              type="button"
               key={w.id}
               class="workout-card workout-card-active"
               onClick={() => navigate(`/workout/${w.id}`)}
+              aria-label={`${w.name || w.type}, in progress. Resume workout.`}
             >
               <div class="workout-card-center">
                 <span class="workout-name">{w.name || w.type}</span>
                 <span class="workout-meta">Tap to resume</span>
               </div>
               <span class="type-badge badge-active">Active</span>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -133,17 +149,32 @@ export function ActivitiesScreen() {
             const workoutSets = sets.value.filter((s) => s.workout_id === w.id);
             const exerciseCount = new Set(workoutSets.map((s) => `${s.exercise_id}__${s.exercise_order}`)).size;
             const tags = getWorkoutTags(workoutSets, exercises.value);
+            const dateLabel = formatPlannedDate(w.date, todayStr);
+            const overdue = isOverdue(w.date, todayStr);
+            const countLabel = exerciseCount > 0 ? pluralExercise(exerciseCount) : 'No exercises yet';
+            const ariaLabel = [
+              w.name || w.type,
+              overdue ? 'overdue' : 'planned',
+              `${overdue ? 'was scheduled for' : 'scheduled for'} ${spokenDate(dateLabel)}`,
+              countLabel,
+            ].join(', ');
 
             return (
-              <div
+              <button
+                type="button"
                 key={w.id}
                 class="workout-card workout-card-planned"
                 onClick={() => navigate(`/history/${w.id}`)}
+                aria-label={ariaLabel}
               >
                 <div class="workout-card-center">
                   <span class="workout-name">{w.name || w.type}</span>
                   <span class="workout-meta">
-                    {exerciseCount > 0 ? `${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}` : 'No exercises yet'}
+                    {countLabel}
+                    {' · '}
+                    <span class={`planned-date${dateLabel === 'Today' || dateLabel === 'Tomorrow' ? ' planned-date-imminent' : ''}`}>
+                      {dateLabel}
+                    </span>
                   </span>
                   {tags.length > 0 && (
                     <div class="workout-card-tags">
@@ -153,8 +184,10 @@ export function ActivitiesScreen() {
                     </div>
                   )}
                 </div>
-                <span class="type-badge badge-planned">Planned</span>
-              </div>
+                <span class={`type-badge ${overdue ? 'badge-overdue' : 'badge-planned'}`}>
+                  {overdue ? 'Overdue' : 'Planned'}
+                </span>
+              </button>
             );
           })}
         </div>
@@ -179,12 +212,19 @@ export function ActivitiesScreen() {
                   const typeColor = TYPE_COLORS[w.type];
                   const tags = w.type === 'weight' ? getWorkoutTags(workoutSets, exercises.value) : [];
 
+                  const metaParts = [
+                    w.duration_min ? `${w.duration_min} min` : '',
+                    exerciseCount > 0 ? pluralExercise(exerciseCount) : '',
+                  ].filter(Boolean);
+
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={w.id}
                       class={`workout-card workout-card-${w.type}`}
                       style={typeColor ? { '--type-accent': typeColor.light, '--type-accent-dark': typeColor.dark } as any : undefined}
                       onClick={() => navigate(`/history/${w.id}`)}
+                      aria-label={[w.name || w.type, w.type, w.date, ...metaParts].join(', ')}
                     >
                       <div class="workout-card-left">
                         <span class="workout-date">{w.date}</span>
@@ -206,7 +246,7 @@ export function ActivitiesScreen() {
                         )}
                       </div>
                       <span class={`type-badge badge-${w.type}`}>{w.type}</span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

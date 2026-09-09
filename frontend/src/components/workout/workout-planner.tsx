@@ -3,6 +3,7 @@ import { AddExerciseModal } from '../exercises/add-exercise-modal';
 import { ExerciseCompactCard } from '../shared/exercise-compact-card';
 import { SectionPicker } from '../shared/section-picker';
 import type { ExerciseWithRow } from '../../api/types';
+import { toLocalDateStr } from '../activities/activities-helpers';
 
 export interface PlannerExercise {
   exercise_id: string;
@@ -15,22 +16,27 @@ export interface PlannerExercise {
 interface Props {
   initialName?: string;
   initialExercises?: PlannerExercise[];
-  onSave: (name: string, exercises: PlannerExercise[]) => Promise<void>;
+  /** Scheduled date (YYYY-MM-DD). Defaults to today for new plans. */
+  initialDate?: string;
+  onSave: (name: string, exercises: PlannerExercise[], date: string) => Promise<void>;
   onDiscard: () => void;
   saving: boolean;
 }
 
-export function WorkoutPlanner({ initialName = '', initialExercises = [], onSave, onDiscard, saving }: Props) {
+export function WorkoutPlanner({ initialName = '', initialExercises = [], initialDate, onSave, onDiscard, saving }: Props) {
   const startName = initialName || 'Custom Workout';
+  const startDate = initialDate || toLocalDateStr(new Date());
   const [name, setName] = useState(startName);
+  const [date, setDate] = useState(startDate);
   const [exercises, setExercises] = useState<PlannerExercise[]>(initialExercises);
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [editingIndex, setEditingIndex] = useState(-1);
 
-  const initialSnapshot = useRef({ name: startName, exercises: JSON.stringify(initialExercises) });
+  const initialSnapshot = useRef({ name: startName, date: startDate, exercises: JSON.stringify(initialExercises) });
 
   const isDirty = () => {
     if (name !== initialSnapshot.current.name) return true;
+    if (date !== initialSnapshot.current.date) return true;
     if (JSON.stringify(exercises) !== initialSnapshot.current.exercises) return true;
     return false;
   };
@@ -84,7 +90,7 @@ export function WorkoutPlanner({ initialName = '', initialExercises = [], onSave
 
   const handleSave = async () => {
     if (exercises.length === 0) return;
-    await onSave(name.trim() || 'Custom Workout', exercises);
+    await onSave(name.trim() || 'Custom Workout', exercises, date);
   };
 
   return (
@@ -110,13 +116,25 @@ export function WorkoutPlanner({ initialName = '', initialExercises = [], onSave
       </div>
 
       <div class="form-group">
-        <label class="form-label">Workout Name</label>
+        <label class="form-label" for="planner-name">Workout Name</label>
         <input
+          id="planner-name"
           class="form-input"
           type="text"
           placeholder="e.g. Upper Push A"
           value={name}
           onInput={(e) => setName((e.target as HTMLInputElement).value)}
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="planner-date">Scheduled for</label>
+        <input
+          id="planner-date"
+          class="form-input"
+          type="date"
+          value={date}
+          onInput={(e) => setDate((e.target as HTMLInputElement).value)}
         />
       </div>
 

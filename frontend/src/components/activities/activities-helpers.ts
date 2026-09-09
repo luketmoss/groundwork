@@ -265,3 +265,65 @@ export function getWorkoutTags(
     .slice(0, 3)
     .map(([tag]) => tag);
 }
+
+// ── Planned workout scheduling (issue #99) ───────────────────────────
+
+/** Whole-day difference between two 'YYYY-MM-DD' strings (b - a), local time. */
+function dayDiff(fromStr: string, toStr: string): number {
+  const from = new Date(fromStr + 'T00:00:00');
+  const to = new Date(toStr + 'T00:00:00');
+  const a = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const b = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+  return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+/**
+ * Formats a planned workout's scheduled date for display on its card.
+ *
+ * Today/Tomorrow/Yesterday read relatively; dates 2–6 days out get a weekday
+ * so the user can plan around them; everything else falls back to a short
+ * date, carrying the year only when it differs from the current one.
+ */
+export function formatPlannedDate(dateStr: string, todayStr: string): string {
+  const diff = dayDiff(todayStr, dateStr);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+
+  const date = new Date(dateStr + 'T00:00:00');
+  const sameYear = date.getFullYear() === new Date(todayStr + 'T00:00:00').getFullYear();
+
+  // 2–6 days out: weekday is more useful than the bare date
+  if (diff >= 2 && diff <= 6) {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}
+
+/** True when a planned workout's scheduled date has already passed. */
+export function isOverdue(dateStr: string, todayStr: string): boolean {
+  return dateStr < todayStr;
+}
+
+/**
+ * Orders planned workouts soonest-first. A single ascending date sort also
+ * satisfies "overdue above upcoming", since past dates sort before today.
+ * Ties break on `created` then `id` so the order is stable across renders.
+ */
+export function sortPlannedWorkouts(workouts: WorkoutWithRow[]): WorkoutWithRow[] {
+  return [...workouts].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) ||
+      a.created.localeCompare(b.created) ||
+      a.id.localeCompare(b.id),
+  );
+}
