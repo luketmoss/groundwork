@@ -1,5 +1,6 @@
 import { signal, computed } from '@preact/signals';
 import type { ExerciseWithRow, LabelWithRow, Template, WorkoutWithRow, SetWithRow, WorkoutType } from '../api/types';
+import { sortPlannedWorkouts } from '../components/activities/activities-helpers';
 
 // Core data signals
 export const exercises = signal<ExerciseWithRow[]>([]);
@@ -29,9 +30,10 @@ export const activeWorkouts = computed(() =>
   workouts.value.filter(w => w.status === 'active'),
 );
 
-// Planned workouts (status === 'planned') — shown in dedicated section, excluded from history/stats
+// Planned workouts (status === 'planned') — shown in dedicated section, excluded from history/stats.
+// Sorted soonest-first; overdue ones sort above upcoming since past dates come first.
 export const plannedWorkouts = computed(() =>
-  workouts.value.filter(w => w.status === 'planned'),
+  sortPlannedWorkouts(workouts.value.filter(w => w.status === 'planned')),
 );
 
 // Completed workouts — used for week streak / stats (excludes planned and active)

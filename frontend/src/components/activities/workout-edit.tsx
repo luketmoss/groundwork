@@ -112,11 +112,18 @@ function PlannedWorkoutEditor({ workoutId }: { workoutId: string }) {
     return orderA - orderB;
   });
 
-  const handleSave = async (name: string, exercises: PlannerExercise[]) => {
+  const handleSave = async (name: string, exercises: PlannerExercise[], date: string) => {
     if (!token) return;
     setSaving(true);
     try {
-      // Delete old workout and create new planned one with updated exercises
+      // Delete old workout and create new planned one with updated exercises.
+      // Fields that should survive the round-trip must be forwarded explicitly —
+      // anything omitted is silently lost, which is how `date` was being reset
+      // to today on every edit (issue #99).
+      //
+      // `template_id` is deliberately NOT forwarded: saveWorkoutForLater
+      // re-expands from the template when it is set, which would discard the
+      // edits the user just made.
       const builderExercises: BuilderExercise[] = exercises.map((ex) => ({
         exercise_id: ex.exercise_id,
         exercise_name: ex.exercise_name,
@@ -127,7 +134,7 @@ function PlannedWorkoutEditor({ workoutId }: { workoutId: string }) {
 
       await deleteWorkout(workoutId, token);
       await saveWorkoutForLater(
-        { type: 'weight', name, exercises: builderExercises },
+        { type: 'weight', name, exercises: builderExercises, date },
         token,
       );
       navigate('/');
@@ -146,6 +153,7 @@ function PlannedWorkoutEditor({ workoutId }: { workoutId: string }) {
     <WorkoutPlanner
       initialName={workout.name}
       initialExercises={initialExercises}
+      initialDate={workout.date}
       onSave={handleSave}
       onDiscard={handleDiscard}
       saving={saving}

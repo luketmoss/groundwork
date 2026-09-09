@@ -496,6 +496,18 @@ input, select, textarea {
   border-color: #7c3aed;
 }
 
+.badge-overdue {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1.5px dashed #dc2626;
+}
+
+[data-theme="dark"] .badge-overdue {
+  background: #2d1414;
+  color: #fca5a5;
+  border-color: #dc2626;
+}
+
 .badge-active {
   background: #fef3c7;
   color: #92400e;
@@ -520,6 +532,17 @@ input, select, textarea {
 .workout-card-planned {
   border: 1.5px dashed var(--color-border);
   background: var(--color-surface-raised);
+}
+
+/* Scheduled date on planned cards — --color-text-muted fails WCAG AA at this
+   size (2.90:1 light / 3.34:1 dark), so the date uses the secondary token
+   (6.05:1 / 5.79:1). See issue #99. */
+.planned-date {
+  color: var(--color-text-secondary);
+}
+
+.planned-date-imminent {
+  font-weight: 600;
 }
 
 /* ===== Planned Workout Detail ===== */
@@ -1982,9 +2005,23 @@ input, select, textarea {
 }
 
 /* ===== Workout Card Enhancements ===== */
+/* Cards are <button> elements for keyboard/SR access (issue #99) — reset the
+   UA button styling so they keep their card appearance. */
 .workout-card {
   flex-wrap: wrap;
   box-shadow: inset 4px 0 0 var(--type-accent, transparent);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.workout-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 [data-theme="dark"] .workout-card {

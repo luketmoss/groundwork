@@ -11,6 +11,9 @@ import {
   getWorkoutTags,
   EQUIPMENT_TAGS,
   toLocalDateStr,
+  formatPlannedDate,
+  isOverdue,
+  sortPlannedWorkouts,
 } from './activities-helpers';
 import type { WorkoutWithRow, SetWithRow, ExerciseWithRow } from '../../api/types';
 
@@ -536,5 +539,117 @@ describe('getWorkoutTags', () => {
     expect(tags).not.toContain('Warmup');
     expect(tags).toContain('Push');
     expect(tags).toContain('Chest');
+  });
+});
+
+// ── formatPlannedDate (AC1) ──────────────────────────────────────────
+
+describe('formatPlannedDate', () => {
+  const today = '2026-04-01'; // Wednesday
+
+  it('returns "Today" for the current day', () => {
+    expect(formatPlannedDate('2026-04-01', today)).toBe('Today');
+  });
+
+  it('returns "Tomorrow" for the next day', () => {
+    expect(formatPlannedDate('2026-04-02', today)).toBe('Tomorrow');
+  });
+
+  it('returns "Yesterday" for the previous day', () => {
+    expect(formatPlannedDate('2026-03-31', today)).toBe('Yesterday');
+  });
+
+  it('returns weekday + short date for +2 days', () => {
+    expect(formatPlannedDate('2026-04-03', today)).toBe('Fri, Apr 3');
+  });
+
+  it('returns weekday + short date for +6 days (upper bound of the weekday range)', () => {
+    expect(formatPlannedDate('2026-04-07', today)).toBe('Tue, Apr 7');
+  });
+
+  it('returns short date without weekday at the +7 day boundary', () => {
+    expect(formatPlannedDate('2026-04-08', today)).toBe('Apr 8');
+  });
+
+  it('returns short date for a far future date in the same year', () => {
+    expect(formatPlannedDate('2026-11-20', today)).toBe('Nov 20');
+  });
+
+  it('includes the year for a future date in a different calendar year', () => {
+    expect(formatPlannedDate('2027-04-05', today)).toBe('Apr 5, 2027');
+  });
+
+  it('includes the year for a past date in a different calendar year', () => {
+    expect(formatPlannedDate('2025-12-20', today)).toBe('Dec 20, 2025');
+  });
+
+  it('returns short date for a past date two or more days ago', () => {
+    expect(formatPlannedDate('2026-03-28', today)).toBe('Mar 28');
+  });
+
+  it('treats a same-year date 7+ days out as short date even across a month boundary', () => {
+    expect(formatPlannedDate('2026-05-01', today)).toBe('May 1');
+  });
+});
+
+// ── isOverdue (AC3) ──────────────────────────────────────────────────
+
+describe('isOverdue', () => {
+  const today = '2026-04-01';
+
+  it('is false for today', () => {
+    expect(isOverdue('2026-04-01', today)).toBe(false);
+  });
+
+  it('is false for a future date', () => {
+    expect(isOverdue('2026-04-02', today)).toBe(false);
+  });
+
+  it('is true for yesterday', () => {
+    expect(isOverdue('2026-03-31', today)).toBe(true);
+  });
+
+  it('is true for a date in a previous year', () => {
+    expect(isOverdue('2025-12-31', today)).toBe(true);
+  });
+});
+
+// ── sortPlannedWorkouts (AC2 + AC3) ──────────────────────────────────
+
+describe('sortPlannedWorkouts', () => {
+  it('orders planned workouts ascending by date, soonest first', () => {
+    const list = [
+      makeWorkout({ id: 'c', date: '2026-04-10' }),
+      makeWorkout({ id: 'a', date: '2026-04-02' }),
+      makeWorkout({ id: 'b', date: '2026-04-05' }),
+    ];
+    expect(sortPlannedWorkouts(list).map(w => w.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('places overdue workouts above upcoming ones', () => {
+    const list = [
+      makeWorkout({ id: 'upcoming', date: '2026-04-05' }),
+      makeWorkout({ id: 'overdue', date: '2026-03-20' }),
+    ];
+    expect(sortPlannedWorkouts(list).map(w => w.id)).toEqual(['overdue', 'upcoming']);
+  });
+
+  it('breaks ties on created, then id, for a deterministic order', () => {
+    const list = [
+      makeWorkout({ id: 'z', date: '2026-04-02', created: '2026-01-02T00:00:00Z' }),
+      makeWorkout({ id: 'a', date: '2026-04-02', created: '2026-01-02T00:00:00Z' }),
+      makeWorkout({ id: 'm', date: '2026-04-02', created: '2026-01-01T00:00:00Z' }),
+    ];
+    expect(sortPlannedWorkouts(list).map(w => w.id)).toEqual(['m', 'a', 'z']);
+  });
+
+  it('does not mutate the input array', () => {
+    const list = [
+      makeWorkout({ id: 'b', date: '2026-04-10' }),
+      makeWorkout({ id: 'a', date: '2026-04-02' }),
+    ];
+    const before = list.map(w => w.id);
+    sortPlannedWorkouts(list);
+    expect(list.map(w => w.id)).toEqual(before);
   });
 });
