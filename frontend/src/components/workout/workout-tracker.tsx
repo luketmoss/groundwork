@@ -501,7 +501,16 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
 
       await saveWorkoutEdits(
         workoutId,
-        { date: editDate, name: editName.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(editDuration), effort: editEffort },
+        {
+          date: editDate, name: editName.trim(), notes: notes.trim(),
+          elapsed_seconds: minutesToSeconds(editDuration), effort: editEffort,
+          // weight workouts have no cardio UI; carry the stored values through
+          // untouched rather than writing '' over them.
+          distance_m: workout?.distance_m ?? '',
+          ascent_m: workout?.ascent_m ?? '',
+          descent_m: workout?.descent_m ?? '',
+          avg_hr: workout?.avg_hr ?? '',
+        },
         editedSets,
         token,
       );

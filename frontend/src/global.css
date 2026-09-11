@@ -2937,3 +2937,43 @@ input, select, textarea {
   white-space: nowrap;
   border: 0;
 }
+
+/* ===== Cardio Fields (#103) ===== */
+/* A hike form grows past 900px at 375px once four fields appear, and the only
+   Save affordance lives in the header. Scoped to .simple-workout-form rather
+   than applied to .template-editor-header, which has ten consumers across
+   templates, workout detail and the builder. Same four declarations as
+   .workout-tracker-header, which is structurally identical. */
+.simple-workout-form .template-editor-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg);
+  z-index: 10;
+}
+
+/* Grouped so the fields read as a unit when they appear and disappear,
+   rather than extending a flat wall of eight. */
+.cardio-fields {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  min-width: 0;
+}
+
+.cardio-fields-legend {
+  padding: 0 var(--space-xs);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.cardio-fields .form-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.cardio-fields-note {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}

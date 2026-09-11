@@ -829,7 +829,8 @@ export async function copyWorkout(
 }
 
 export async function startSimpleWorkout(
-  data: { type: WorkoutType; name: string; notes: string; elapsed_seconds: string; effort: Effort | ''; date?: string },
+  data: { type: WorkoutType; name: string; notes: string; elapsed_seconds: string; effort: Effort | '';
+         distance_m: string; ascent_m: string; descent_m: string; avg_hr: string; date?: string },
   token: string,
 ): Promise<void> {
   try {
@@ -839,6 +840,10 @@ export async function startSimpleWorkout(
       notes: data.notes,
       elapsed_seconds: data.elapsed_seconds,
       effort: data.effort,
+      distance_m: data.distance_m,
+      ascent_m: data.ascent_m,
+      descent_m: data.descent_m,
+      avg_hr: data.avg_hr,
       date: data.date,
     }, token);
 
@@ -898,6 +903,11 @@ export interface EditWorkoutData {
   elapsed_seconds: string;
   /** '' is unset, and a legitimate permanent state — never defaulted. */
   effort: Effort | '';
+  /** Canonical integer meters / bpm, as stored. Forms convert on save. */
+  distance_m: string;
+  ascent_m: string;
+  descent_m: string;
+  avg_hr: string;
 }
 
 export interface EditSetData {
@@ -931,6 +941,10 @@ export async function saveWorkoutEdits(
       notes: metadata.notes,
       elapsed_seconds: metadata.elapsed_seconds,
       effort: metadata.effort,
+      distance_m: metadata.distance_m,
+      ascent_m: metadata.ascent_m,
+      descent_m: metadata.descent_m,
+      avg_hr: metadata.avg_hr,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 
@@ -1046,6 +1060,10 @@ export async function saveSimpleWorkoutEdits(
       notes: metadata.notes,
       elapsed_seconds: metadata.elapsed_seconds,
       effort: metadata.effort,
+      distance_m: metadata.distance_m,
+      ascent_m: metadata.ascent_m,
+      descent_m: metadata.descent_m,
+      avg_hr: metadata.avg_hr,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 

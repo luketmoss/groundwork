@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 import {
   normalizeDate, normalizeRangeToMax, groupTemplateRows, todayStr,
-  slotKey, groupSetsByExercise, findSetSlots, secondsToMinutes, workoutRowValues,
+  slotKey, groupSetsByExercise, findSetSlots, secondsToMinutes, workoutRowValues, metersToMiles, metersToFeet,
 } from './domain.js';
 
 test('normalizeDate passes ISO dates through', () => {
@@ -164,4 +164,38 @@ test('an unset session effort writes an empty cell, never a default', () => {
     descent_m: '', avg_hr: '',
   };
   assert.equal(workoutRowValues(w)[12], '');
+});
+
+// --- #103: cardio unit conversions mirror frontend/src/api/units.ts --
+
+test('metersToMiles reads 19956 m back as 12.4 mi', () => {
+  assert.equal(metersToMiles('19956'), 12.4);
+});
+
+test('metersToFeet reads 457 m back as 1500 ft', () => {
+  assert.equal(metersToFeet('457'), 1500);
+});
+
+test('cardio conversions return null for an unset value, not 0', () => {
+  assert.equal(metersToMiles(''), null);
+  assert.equal(metersToFeet(''), null);
+});
+
+test('cardio conversions keep a deliberate zero distinct from unset', () => {
+  assert.equal(metersToMiles('0'), 0);
+  assert.equal(metersToFeet('0'), 0);
+});
+
+test('a workout row carries cardio attributes in columns N-Q', () => {
+  const w = {
+    id: 'w1', date: '2026-03-15', time: '07:00', type: 'bike', name: 'Ride',
+    template_id: '', notes: '', elapsed_seconds: '6180', created: '', copied_from: '',
+    status: '', moving_seconds: '', effort: '', distance_m: '19956', ascent_m: '457',
+    descent_m: '', avg_hr: '136',
+  };
+  const row = workoutRowValues(w);
+  assert.equal(row[13], '19956', 'distance belongs in column N');
+  assert.equal(row[14], '457', 'ascent belongs in column O');
+  assert.equal(row[15], '', 'descent stays empty');
+  assert.equal(row[16], '136', 'avg HR belongs in column Q');
 });

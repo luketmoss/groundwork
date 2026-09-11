@@ -7,6 +7,9 @@ import { toLocalDateStr } from '../activities/activities-helpers';
 import { minutesToSeconds } from '../../api/duration';
 import { EffortToggle } from '../shared/effort-toggle';
 import type { Effort } from '../../api/types';
+import { CardioFields } from '../shared/cardio-fields';
+import type { CardioValues } from '../shared/cardio-fields';
+import { milesToMeters, feetToMeters, bpmToStored } from '../../api/units';
 
 interface Props {
   workoutType: WorkoutType;
@@ -29,6 +32,9 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
   const [notes, setNotes] = useState('');
   const [duration, setDuration] = useState('');
   const [effort, setEffort] = useState<Effort | ''>('');
+  const [cardio, setCardio] = useState<CardioValues>({ distance: '', ascent: '', descent: '', avgHr: '' });
+  const patchCardio = (patch: Partial<CardioValues>) => setCardio((c) => ({ ...c, ...patch }));
+
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -42,6 +48,10 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
         notes: notes.trim(),
         elapsed_seconds: minutesToSeconds(duration),
         effort,
+        distance_m: milesToMeters(cardio.distance),
+        ascent_m: feetToMeters(cardio.ascent),
+        descent_m: feetToMeters(cardio.descent),
+        avg_hr: bpmToStored(cardio.avgHr),
         date: safeDate,
       }, token);
       navigate('/');
@@ -58,7 +68,9 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
         <button
           class="template-editor-back"
           onClick={() => {
-            if ((notes || duration) && !confirm('Discard changes? Your edits will not be saved.')) return;
+            const dirty = notes || duration || effort
+              || cardio.distance || cardio.ascent || cardio.descent || cardio.avgHr;
+            if (dirty && !confirm('Discard changes? Your edits will not be saved.')) return;
             onBack();
           }}
           aria-label="Back"
@@ -109,6 +121,13 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
           onInput={(e) => setDuration((e.target as HTMLInputElement).value)}
         />
       </div>
+
+      <CardioFields
+        workoutType={workoutType}
+        values={cardio}
+        onChange={patchCardio}
+        idPrefix="new"
+      />
 
       <div class="form-group">
         <label class="form-label">Session Effort (optional)</label>

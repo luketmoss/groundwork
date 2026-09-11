@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { SPREADSHEET_ID, sheetsUpdate } from './sheets.js';
 import {
   WORKOUT_TYPES, EFFORTS, SECTIONS,
-  normalizeDate, normalizeRangeToMax, secondsToMinutes,
+  normalizeDate, normalizeRangeToMax, secondsToMinutes, metersToMiles, metersToFeet,
   fetchExercises, createExercise, writeExerciseRow,
   fetchTemplateRows, groupTemplateRows, createTemplate, replaceTemplateRows,
   fetchWorkouts, createWorkout, writeWorkoutRow,
@@ -157,6 +157,7 @@ tool(
       const mins = secondsToMinutes(w.elapsed_seconds);
       if (mins !== null) parts.push(`— ${mins} min`);
       if (w.effort) parts.push(`— ${w.effort}`);
+      if (w.distance_m) parts.push(`— ${metersToMiles(w.distance_m)} mi`);
       if (w.notes) parts.push(`— "${w.notes}"`);
       parts.push(`(id: ${w.id})`);
       return parts.join(' ');
@@ -183,6 +184,10 @@ tool(
     const mins = secondsToMinutes(w.elapsed_seconds);
     if (mins !== null) out.push(`- Duration: ${mins} min`);
     if (w.effort) out.push(`- Session effort: ${w.effort}`);
+    if (w.distance_m) out.push(`- Distance: ${metersToMiles(w.distance_m)} mi`);
+    if (w.ascent_m) out.push(`- Ascent: ${metersToFeet(w.ascent_m)} ft`);
+    if (w.descent_m) out.push(`- Descent: ${metersToFeet(w.descent_m)} ft`);
+    if (w.avg_hr) out.push(`- Avg HR: ${w.avg_hr} bpm`);
     if (w.template_id) out.push(`- From template: ${w.template_id}`);
     if (w.copied_from) out.push(`- Copied from: ${w.copied_from}`);
     if (w.notes) out.push(`- Notes: ${w.notes}`);
@@ -333,6 +338,16 @@ tool(
     template: z.string().optional().describe('Template name or id to expand into planned sets'),
     exercises: z.array(exerciseSpec).optional().describe('Explicit exercise list (ignored if template is given)'),
     notes: z.string().optional().describe('Workout notes'),
+    distance_m: z.string().optional().describe(
+      'Distance in METERS (canonical storage unit). 12.4 miles is "19956". Pass "" to clear.',
+    ),
+    ascent_m: z.string().optional().describe(
+      'Elevation gain in METERS. 1500 feet is "457". Pass "" to clear.',
+    ),
+    descent_m: z.string().optional().describe(
+      'Elevation loss in METERS. Recorded for hikes only. Pass "" to clear.',
+    ),
+    avg_hr: z.string().optional().describe('Average heart rate in bpm. Pass "" to clear.'),
     status: z
       .enum(['planned', 'completed'])
       .optional()
@@ -483,7 +498,7 @@ tool(
 
 tool(
   'thrive_update_workout',
-  'Fix a workout record: change its date, name, type, notes, duration, session effort, or flip it between planned and completed. ' +
+  'Fix a workout record: change its date, name, type, notes, duration, session effort, cardio attributes, or flip it between planned and completed. ' +
     'Only pass the fields you want to change.',
   {
     workout_id: z.string().describe('Workout id'),
@@ -506,7 +521,8 @@ tool(
       .optional()
       .describe("'planned' marks it upcoming; 'completed' marks it done"),
   },
-  async ({ workout_id, date, name, type, notes, elapsed_seconds, effort, status }) => {
+  async ({ workout_id, date, name, type, notes, elapsed_seconds, effort,
+           distance_m, ascent_m, descent_m, avg_hr, status }) => {
     const workouts = await fetchWorkouts();
     const w = resolveWorkout(workout_id, workouts);
 
@@ -528,6 +544,11 @@ tool(
     if (effort !== undefined) {
       changes.push(`effort ${w.effort || '(unset)'} -> ${effort || '(unset)'}`);
       updated.effort = effort;
+    }
+    for (const [key, value] of Object.entries({ distance_m, ascent_m, descent_m, avg_hr })) {
+      if (value === undefined) continue;
+      changes.push(`${key} ${w[key] || '(unset)'} -> ${value || '(unset)'}`);
+      updated[key] = value;
     }
     if (status !== undefined) {
       const s = status === 'planned' ? 'planned' : '';
