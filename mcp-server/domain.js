@@ -9,7 +9,7 @@ import { sheetsGet, sheetsAppend, sheetsUpdate, deleteRows } from './sheets.js';
 const RANGES = {
   exercises: 'Exercises!A2:E',
   templates: 'Templates!A2:H',
-  workouts: 'Workouts!A2:K',
+  workouts: 'Workouts!A2:Q',
   sets: 'Sets!A2:J',
 };
 
@@ -138,13 +138,20 @@ export async function replaceTemplateRows(templateId, name, exercises, existingR
   );
 }
 
-// --- Workouts (A:K) -------------------------------------------------
+// --- Workouts (A:Q) -------------------------------------------------
 
 function workoutRowValues(w) {
   return [
     w.id, w.date, w.time, w.type, w.name, w.template_id,
-    w.notes, w.duration_min, w.created, w.copied_from, w.status,
+    w.notes, w.elapsed_seconds, w.created, w.copied_from, w.status,
+    w.moving_seconds, w.effort, w.distance_m, w.ascent_m, w.descent_m, w.avg_hr,
   ];
+}
+
+/** Seconds (as stored) -> whole minutes, or null when unset. Never 0. */
+export function secondsToMinutes(elapsedSeconds) {
+  const seconds = parseInt(elapsedSeconds, 10);
+  return isNaN(seconds) ? null : Math.round(seconds / 60);
 }
 
 export async function fetchWorkouts() {
@@ -157,10 +164,16 @@ export async function fetchWorkouts() {
     name: row[4] || '',
     template_id: row[5] || '',
     notes: row[6] || '',
-    duration_min: row[7] || '',
+    elapsed_seconds: row[7] || '',
     created: row[8] || '',
     copied_from: row[9] || '',
     status: row[10] || '',
+    moving_seconds: row[11] || '',
+    effort: row[12] || '',
+    distance_m: row[13] || '',
+    ascent_m: row[14] || '',
+    descent_m: row[15] || '',
+    avg_hr: row[16] || '',
     sheetRow: i + 2,
   }));
 }
@@ -175,12 +188,20 @@ export async function createWorkout(data) {
     name: data.name,
     template_id: data.template_id || '',
     notes: data.notes || '',
-    duration_min: data.duration_min || '',
+    elapsed_seconds: data.elapsed_seconds || '',
     created: now.toISOString(),
     copied_from: data.copied_from || '',
     status: data.status || '',
+    // #101: nullable activity attributes, populated by #102/#103. Never
+    // defaulted — empty means nobody said, which is a legitimate state.
+    moving_seconds: '',
+    effort: '',
+    distance_m: '',
+    ascent_m: '',
+    descent_m: '',
+    avg_hr: '',
   };
-  await sheetsAppend('Workouts!A:K', [workoutRowValues(workout)]);
+  await sheetsAppend('Workouts!A:Q', [workoutRowValues(workout)]);
   return workout;
 }
 
@@ -198,10 +219,10 @@ export async function writeWorkoutRow(workout) {
       `changed underneath this call. Re-read the workout and retry.`,
     );
   }
-  await sheetsUpdate(`Workouts!A${workout.sheetRow}:K${workout.sheetRow}`, [workoutRowValues(workout)]);
+  await sheetsUpdate(`Workouts!A${workout.sheetRow}:Q${workout.sheetRow}`, [workoutRowValues(workout)]);
 }
 
-// --- Sets (A:K) -----------------------------------------------------
+// --- Sets (A:J) -----------------------------------------------------
 
 function setRowValues(s) {
   return [

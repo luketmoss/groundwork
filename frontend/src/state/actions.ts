@@ -640,15 +640,17 @@ export async function finishWorkout(
     const workout = workouts.value.find((w) => w.id === workoutId);
     if (!workout) throw new Error('Workout not found');
 
-    // Calculate duration
+    // Elapsed time, in the seconds the column now stores. An unfinishable
+    // clock (negative elapsed) leaves the field empty rather than writing 0 —
+    // no duration and a zero duration are different facts.
     const startTime = new Date(`${workout.date}T${workout.time || '00:00'}`);
-    const durationMin = Math.round((Date.now() - startTime.getTime()) / 60000);
+    const elapsedSeconds = Math.round((Date.now() - startTime.getTime()) / 1000);
 
     const updated = {
       ...workout,
       notes,
       status: '',
-      duration_min: String(durationMin > 0 ? durationMin : ''),
+      elapsed_seconds: String(elapsedSeconds > 0 ? elapsedSeconds : ''),
     };
 
     await updateWorkoutApi(workout.sheetRow, updated, token);
@@ -825,7 +827,7 @@ export async function copyWorkout(
 }
 
 export async function startSimpleWorkout(
-  data: { type: WorkoutType; name: string; notes: string; duration_min: string; date?: string },
+  data: { type: WorkoutType; name: string; notes: string; elapsed_seconds: string; date?: string },
   token: string,
 ): Promise<void> {
   try {
@@ -833,7 +835,7 @@ export async function startSimpleWorkout(
       type: data.type,
       name: data.name,
       notes: data.notes,
-      duration_min: data.duration_min,
+      elapsed_seconds: data.elapsed_seconds,
       date: data.date,
     }, token);
 
@@ -889,7 +891,8 @@ export interface EditWorkoutData {
   date: string;
   name: string;
   notes: string;
-  duration_min: string;
+  /** Seconds, as stored. Forms convert from typed minutes at their boundary. */
+  elapsed_seconds: string;
 }
 
 export interface EditSetData {
@@ -921,7 +924,7 @@ export async function saveWorkoutEdits(
       date: metadata.date,
       name: metadata.name,
       notes: metadata.notes,
-      duration_min: metadata.duration_min,
+      elapsed_seconds: metadata.elapsed_seconds,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 
@@ -1035,7 +1038,7 @@ export async function saveSimpleWorkoutEdits(
       date: metadata.date,
       name: metadata.name,
       notes: metadata.notes,
-      duration_min: metadata.duration_min,
+      elapsed_seconds: metadata.elapsed_seconds,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 

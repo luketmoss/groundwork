@@ -17,6 +17,7 @@ import {
   isOverdue,
 } from './activities-helpers';
 import { LabelBadge } from '../shared/label-badge';
+import { formatDuration } from '../../api/duration';
 
 /** Type-color map for inset box-shadow accent (light theme). */
 const TYPE_COLORS: Record<string, { light: string; dark: string }> = {
@@ -213,7 +214,7 @@ export function ActivitiesScreen() {
                   const tags = w.type === 'weight' ? getWorkoutTags(workoutSets, exercises.value) : [];
 
                   const metaParts = [
-                    w.duration_min ? `${w.duration_min} min` : '',
+                    formatDuration(w.elapsed_seconds),
                     exerciseCount > 0 ? pluralExercise(exerciseCount) : '',
                   ].filter(Boolean);
 
@@ -233,8 +234,8 @@ export function ActivitiesScreen() {
                       <div class="workout-card-center">
                         <span class="workout-name">{w.name || w.type}</span>
                         <span class="workout-meta">
-                          {w.duration_min ? `${w.duration_min} min` : ''}
-                          {w.duration_min && exerciseCount > 0 ? ' · ' : ''}
+                          {formatDuration(w.elapsed_seconds)}
+                          {w.elapsed_seconds && exerciseCount > 0 ? ' · ' : ''}
                           {exerciseCount > 0 ? `${exerciseCount} exercise${exerciseCount !== 1 ? 's' : ''}` : ''}
                         </span>
                         {tags.length > 0 && (

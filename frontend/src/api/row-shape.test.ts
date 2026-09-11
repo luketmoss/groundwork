@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { setToRow } from './workouts-api';
+import { setToRow, workoutToRow } from './workouts-api';
 import { templateRowValues } from './templates-api';
-import type { WorkoutSet } from './types';
+import type { WorkoutSet, Workout } from './types';
 
 function makeSet(overrides: Partial<WorkoutSet> = {}): WorkoutSet {
   return {
@@ -67,5 +67,46 @@ describe('templateRowValues', () => {
     expect(templateRowValues(row)).toEqual([
       'tpl_001', 'Upper Push A', 1, 'ex1', 'Bench Press', 'primary', '5', '6',
     ]);
+  });
+});
+
+// Issue #101 — the Workouts tab is A:Q: eleven original columns plus six
+// nullable activity attributes.
+describe('workoutToRow', () => {
+  const workout: Workout = {
+    id: 'w_001',
+    date: '2026-03-15',
+    time: '07:00',
+    type: 'weight',
+    name: 'Upper Push A',
+    template_id: 'tpl_001',
+    notes: 'Felt strong',
+    elapsed_seconds: '3720',
+    created: '2026-03-15T07:00:00.000Z',
+    copied_from: '',
+    status: '',
+    moving_seconds: '',
+    effort: '',
+    distance_m: '',
+    ascent_m: '',
+    descent_m: '',
+    avg_hr: '',
+  };
+
+  it('emits exactly seventeen cells, spanning A:Q', () => {
+    expect(workoutToRow(workout)).toHaveLength(17);
+  });
+
+  it('keeps Created, copied_from and status at I, J, K so they do not shift', () => {
+    const row = workoutToRow(workout);
+    expect(row[7]).toBe('3720');                        // H Elapsed (s)
+    expect(row[8]).toBe('2026-03-15T07:00:00.000Z');    // I Created
+    expect(row[9]).toBe('');                            // J copied_from
+    expect(row[10]).toBe('');                           // K status
+  });
+
+  // AC1: the new columns ship empty and are never defaulted.
+  it('writes the six new attributes as empty cells, never as 0', () => {
+    expect(workoutToRow(workout).slice(11)).toEqual(['', '', '', '', '', '']);
   });
 });

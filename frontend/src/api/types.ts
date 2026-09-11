@@ -39,10 +39,18 @@ export interface Workout {
   name: string;
   template_id: string;
   notes: string;
-  duration_min: string;
+  elapsed_seconds: string;
   created: string;
   copied_from: string;
   status: string; // '' = active/complete, 'planned' = saved for later
+  // Activity attributes (#101). All nullable — '' means nobody said, which is a
+  // legitimate permanent state. Never default these, least of all `effort`.
+  moving_seconds: string;
+  effort: Effort | '';
+  distance_m: string;
+  ascent_m: string;
+  descent_m: string;
+  avg_hr: string;
 }
 export interface WorkoutWithRow extends Workout { sheetRow: number; }
 

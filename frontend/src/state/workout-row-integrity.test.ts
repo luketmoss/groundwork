@@ -110,18 +110,24 @@ const {
 const TOKEN = 'test-token';
 
 function workoutRow(w: { id: string; date: string; time: string; type: string; name: string; status?: string }): string[] {
-  return [w.id, w.date, w.time, w.type, w.name, '', '', '', '', '', w.status || ''];
+  // A:Q — eleven original columns plus the six nullable attributes (#101).
+  return [w.id, w.date, w.time, w.type, w.name, '', '', '', '', '', w.status || '', '', '', '', '', '', ''];
 }
 
 function setRow(s: { workout_id: string; exercise_id: string; exercise_name: string }): string[] {
-  return [s.workout_id, s.exercise_id, s.exercise_name, 'primary', '1', '1', '', '', '', '', ''];
+  // A:J — the Notes column was removed in #100.
+  return [s.workout_id, s.exercise_id, s.exercise_name, 'primary', '1', '1', '', '', '', ''];
 }
 
 function workoutsFromSheet(): WorkoutWithRow[] {
   return sheet.Workouts.map((row, i) => ({
     id: row[0], date: row[1], time: row[2], type: row[3] as any, name: row[4],
-    template_id: row[5], notes: row[6], duration_min: row[7], created: row[8],
-    copied_from: row[9], status: row[10], sheetRow: i + 2,
+    template_id: row[5], notes: row[6], elapsed_seconds: row[7], created: row[8],
+    copied_from: row[9], status: row[10],
+    moving_seconds: row[11] || '', effort: (row[12] || '') as WorkoutWithRow['effort'],
+    distance_m: row[13] || '', ascent_m: row[14] || '',
+    descent_m: row[15] || '', avg_hr: row[16] || '',
+    sheetRow: i + 2,
   }));
 }
 
@@ -169,7 +175,8 @@ describe('AC2: a workout write never targets another workout\'s row', () => {
     // but row 2 actually belongs to 'w_real'.
     const staleWorkout: WorkoutWithRow = {
       id: 'w_ghost', date: '2026-09-01', time: '09:00', type: 'weight', name: 'Ghost',
-      template_id: '', notes: '', duration_min: '', created: '', copied_from: '', status: 'active',
+      template_id: '', notes: '', elapsed_seconds: '', created: '', copied_from: '', status: 'active',
+      moving_seconds: '', effort: '', distance_m: '', ascent_m: '', descent_m: '', avg_hr: '',
       sheetRow: 2,
     };
     workouts.value = [staleWorkout];
@@ -196,7 +203,8 @@ describe('AC2: a workout write never targets another workout\'s row', () => {
     ];
     const staleWorkout: WorkoutWithRow = {
       id: 'w_planned', date: '', time: '', type: 'weight', name: 'Planned',
-      template_id: '', notes: '', duration_min: '', created: '', copied_from: '', status: 'planned',
+      template_id: '', notes: '', elapsed_seconds: '', created: '', copied_from: '', status: 'planned',
+      moving_seconds: '', effort: '', distance_m: '', ascent_m: '', descent_m: '', avg_hr: '',
       sheetRow: 2,
     };
     workouts.value = [staleWorkout];

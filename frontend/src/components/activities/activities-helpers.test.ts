@@ -26,10 +26,16 @@ function makeWorkout(overrides: Partial<WorkoutWithRow> = {}): WorkoutWithRow {
     name: 'Upper Push A',
     template_id: '',
     notes: '',
-    duration_min: '60',
+    elapsed_seconds: '3600',
     created: '',
     copied_from: '',
     status: '',
+    moving_seconds: '',
+    effort: '',
+    distance_m: '',
+    ascent_m: '',
+    descent_m: '',
+    avg_hr: '',
     sheetRow: 2,
     ...overrides,
   };
@@ -281,26 +287,26 @@ describe('getWeekTotalMinutes', () => {
 
   it('AC1: sums all durations when every workout has one', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '45' }),
-      makeWorkout({ id: 'w3', date: '2026-03-15', duration_min: '45' }),
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', elapsed_seconds: '2700' }),
+      makeWorkout({ id: 'w3', date: '2026-03-15', elapsed_seconds: '2700' }),
     ];
     expect(getWeekTotalMinutes(workouts, today)).toBe(150);
   });
 
   it('AC2: sums only workouts that have a duration (partial)', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '' }),
-      makeWorkout({ id: 'w3', date: '2026-03-13', duration_min: '45' }),
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', elapsed_seconds: '' }),
+      makeWorkout({ id: 'w3', date: '2026-03-13', elapsed_seconds: '2700' }),
     ];
     expect(getWeekTotalMinutes(workouts, today)).toBe(105);
   });
 
   it('AC3: returns 0 when no workouts have a duration', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '' }),
-      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '' }),
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', elapsed_seconds: '' }),
     ];
     expect(getWeekTotalMinutes(workouts, today)).toBe(0);
   });
@@ -311,8 +317,8 @@ describe('getWeekTotalMinutes', () => {
 
   it('ignores workouts outside the current week', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-01', duration_min: '90' }), // outside week
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-01', elapsed_seconds: '5400' }), // outside week
     ];
     expect(getWeekTotalMinutes(workouts, today)).toBe(60);
   });
@@ -362,18 +368,18 @@ describe('getLastWeekTotalMinutes', () => {
 
   it('sums durations for last week only', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-12', duration_min: '45' }),
-      makeWorkout({ id: 'w3', date: '2026-03-16', duration_min: '30' }), // This week (excluded)
-      makeWorkout({ id: 'w4', date: '2026-03-01', duration_min: '90' }), // Earlier (excluded)
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-12', elapsed_seconds: '2700' }),
+      makeWorkout({ id: 'w3', date: '2026-03-16', elapsed_seconds: '1800' }), // This week (excluded)
+      makeWorkout({ id: 'w4', date: '2026-03-01', elapsed_seconds: '5400' }), // Earlier (excluded)
     ];
     expect(getLastWeekTotalMinutes(workouts, today)).toBe(105);
   });
 
   it('skips workouts with no duration (contributes 0 min but still counted)', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-09', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-11', duration_min: '' }),
+      makeWorkout({ id: 'w1', date: '2026-03-09', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-11', elapsed_seconds: '' }),
     ];
     expect(getLastWeekTotalMinutes(workouts, today)).toBe(60);
   });
@@ -428,17 +434,17 @@ describe('getMonthTotalMinutes', () => {
 
   it('sums durations for this month only', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-01', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-15', duration_min: '45' }),
-      makeWorkout({ id: 'w3', date: '2026-02-28', duration_min: '90' }), // Last month (excluded)
+      makeWorkout({ id: 'w1', date: '2026-03-01', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-15', elapsed_seconds: '2700' }),
+      makeWorkout({ id: 'w3', date: '2026-02-28', elapsed_seconds: '5400' }), // Last month (excluded)
     ];
     expect(getMonthTotalMinutes(workouts, today)).toBe(105);
   });
 
   it('AC4: workouts with no duration contribute 0 min but count in workout count', () => {
     const workouts = [
-      makeWorkout({ id: 'w1', date: '2026-03-10', duration_min: '60' }),
-      makeWorkout({ id: 'w2', date: '2026-03-12', duration_min: '' }),
+      makeWorkout({ id: 'w1', date: '2026-03-10', elapsed_seconds: '3600' }),
+      makeWorkout({ id: 'w2', date: '2026-03-12', elapsed_seconds: '' }),
     ];
     expect(getMonthTotalMinutes(workouts, today)).toBe(60);
     expect(getMonthWorkoutCount(workouts, today)).toBe(2);
@@ -466,7 +472,7 @@ describe('week stats exclude planned workouts (via caller filtering)', () => {
   });
 
   it('getWeekTotalMinutes: planned workouts filtered out by caller are not summed', () => {
-    const completed = makeWorkout({ id: 'w_done', date: '2026-03-09', duration_min: '60', status: '' });
+    const completed = makeWorkout({ id: 'w_done', date: '2026-03-09', elapsed_seconds: '3600', status: '' });
     const completedOnly = [completed];
     expect(getWeekTotalMinutes(completedOnly, today)).toBe(60);
   });

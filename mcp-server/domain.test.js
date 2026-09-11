@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 import {
   normalizeDate, normalizeRangeToMax, groupTemplateRows, todayStr,
-  slotKey, groupSetsByExercise, findSetSlots,
+  slotKey, groupSetsByExercise, findSetSlots, secondsToMinutes,
 } from './domain.js';
 
 test('normalizeDate passes ISO dates through', () => {
@@ -124,4 +124,20 @@ test('findSetSlots returns nothing for a section the exercise is not in', () => 
 test('slotKey separates the same exercise in two positions', () => {
   assert.notEqual(slotKey(slotSets[0]), slotKey(slotSets[2]));
   assert.equal(slotKey(slotSets[2]), slotKey(slotSets[3]));
+});
+
+// --- #101: durations are stored in seconds, displayed in minutes ----
+
+test('secondsToMinutes reads a migrated 62-minute workout back as 62', () => {
+  assert.equal(secondsToMinutes('3720'), 62);
+});
+
+test('secondsToMinutes returns null for an unset duration, not 0', () => {
+  assert.equal(secondsToMinutes(''), null);
+  assert.equal(secondsToMinutes('abc'), null);
+});
+
+test('secondsToMinutes tells a genuine zero apart from an absent value', () => {
+  assert.equal(secondsToMinutes('0'), 0);
+  assert.equal(secondsToMinutes(''), null);
 });

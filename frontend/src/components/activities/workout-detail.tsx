@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
 import { ExerciseDetail, groupSetsIntoExercises } from './exercise-detail';
 import { ExerciseCompactCard } from '../shared/exercise-compact-card';
+import { formatDuration } from '../../api/duration';
 
 interface Props {
   workoutId: string;
@@ -159,8 +160,8 @@ export function WorkoutDetail({ workoutId }: Props) {
           }
           {!isPlanned && <span class="detail-date">{workout.date}</span>}
           {!isPlanned && workout.time && <span class="detail-time">{workout.time}</span>}
-          {!isPlanned && workout.duration_min && (
-            <span class="detail-duration">{workout.duration_min} min</span>
+          {!isPlanned && workout.elapsed_seconds && (
+            <span class="detail-duration">{formatDuration(workout.elapsed_seconds)}</span>
           )}
         </div>
         {workout.notes && (

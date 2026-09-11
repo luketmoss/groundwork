@@ -3,6 +3,7 @@ import { workouts } from '../../state/store';
 import { saveSimpleWorkoutEdits } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
+import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
 
 interface Props {
   workoutId: string;
@@ -14,7 +15,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
 
   const [date, setDate] = useState(workout?.date || '');
   const [name, setName] = useState(workout?.name || '');
-  const [duration, setDuration] = useState(workout?.duration_min || '');
+  const [duration, setDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
   const [notes, setNotes] = useState(workout?.notes || '');
   const [saving, setSaving] = useState(false);
 
@@ -33,7 +34,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
     if (!token) return;
     setSaving(true);
     try {
-      await saveSimpleWorkoutEdits(workoutId, { date, name: name.trim(), notes: notes.trim(), duration_min: duration }, token);
+      await saveSimpleWorkoutEdits(workoutId, { date, name: name.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(duration) }, token);
       navigate(`/history/${workoutId}`);
     } catch {
       // Error toast shown by action
@@ -43,7 +44,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
   };
 
   const handleDiscard = () => {
-    if (date !== workout.date || name !== workout.name || duration !== (workout.duration_min || '') || notes !== workout.notes) {
+    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes) {
       if (!confirm('Discard changes? Your edits will not be saved.')) return;
     }
     navigate(`/history/${workoutId}`);
