@@ -127,7 +127,9 @@ export function getWeekWorkoutCount(
 
 /**
  * Returns the total duration in minutes for workouts in the Mon–Sun week
- * containing `todayStr`. Skips workouts with empty or non-numeric duration_min.
+ * containing `todayStr`. Sums elapsed seconds and converts once at the end, so
+ * no per-workout rounding accumulates. Workouts with an empty or non-numeric
+ * `elapsed_seconds` are skipped, not counted as zero.
  */
 export function getWeekTotalMinutes(
   allWorkouts: WorkoutWithRow[],
@@ -138,10 +140,10 @@ export function getWeekTotalMinutes(
   let total = 0;
   for (const w of allWorkouts) {
     if (!weekDates.has(w.date)) continue;
-    const mins = parseInt(w.duration_min, 10);
-    if (!isNaN(mins)) total += mins;
+    const seconds = parseInt(w.elapsed_seconds, 10);
+    if (!isNaN(seconds)) total += seconds;
   }
-  return total;
+  return Math.round(total / 60);
 }
 
 // ── Last-week helpers ────────────────────────────────────────────────
@@ -178,7 +180,8 @@ export function getLastWeekWorkoutCount(
 
 /**
  * Returns the total duration in minutes for workouts in the Mon–Sun week
- * prior to the week containing `todayStr`.
+ * prior to the week containing `todayStr`. Sums elapsed seconds and converts
+ * once at the end; workouts with no duration are skipped, not counted as zero.
  */
 export function getLastWeekTotalMinutes(
   allWorkouts: WorkoutWithRow[],
@@ -188,10 +191,10 @@ export function getLastWeekTotalMinutes(
   let total = 0;
   for (const w of allWorkouts) {
     if (!lastWeekDates.has(w.date)) continue;
-    const mins = parseInt(w.duration_min, 10);
-    if (!isNaN(mins)) total += mins;
+    const seconds = parseInt(w.elapsed_seconds, 10);
+    if (!isNaN(seconds)) total += seconds;
   }
-  return total;
+  return Math.round(total / 60);
 }
 
 // ── This-month helpers ───────────────────────────────────────────────
@@ -214,7 +217,9 @@ export function getMonthWorkoutCount(
 
 /**
  * Returns the total duration in minutes for workouts in the current calendar
- * month. Workouts with no duration contribute 0 minutes.
+ * month. Sums elapsed seconds and converts once at the end. Workouts with no
+ * duration are skipped, not counted as zero — a month with one 60-minute
+ * session and three untimed ones totals 60, not an average of 15.
  */
 export function getMonthTotalMinutes(
   allWorkouts: WorkoutWithRow[],
@@ -227,10 +232,10 @@ export function getMonthTotalMinutes(
   for (const w of allWorkouts) {
     const d = new Date(w.date + 'T00:00:00');
     if (d.getFullYear() !== thisYear || d.getMonth() !== thisMonth) continue;
-    const mins = parseInt(w.duration_min, 10);
-    if (!isNaN(mins)) total += mins;
+    const seconds = parseInt(w.elapsed_seconds, 10);
+    if (!isNaN(seconds)) total += seconds;
   }
-  return total;
+  return Math.round(total / 60);
 }
 
 // ── Tag aggregation ──────────────────────────────────────────────────

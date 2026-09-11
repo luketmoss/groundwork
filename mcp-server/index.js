@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { SPREADSHEET_ID, sheetsUpdate } from './sheets.js';
 import {
   WORKOUT_TYPES, EFFORTS, SECTIONS,
-  normalizeDate, normalizeRangeToMax,
+  normalizeDate, normalizeRangeToMax, secondsToMinutes,
   fetchExercises, createExercise, writeExerciseRow,
   fetchTemplateRows, groupTemplateRows, createTemplate, replaceTemplateRows,
   fetchWorkouts, createWorkout, writeWorkoutRow,
@@ -154,7 +154,8 @@ tool(
       const parts = [`- ${w.date} **${w.name || '(unnamed)'}** [${w.type}]`];
       if (isPlanned(w)) parts.push('(planned)');
       if (w.type === 'weight') parts.push(`— ${exercises} exercises, ${logged}/${mine.length} sets logged`);
-      if (w.duration_min) parts.push(`— ${w.duration_min} min`);
+      const mins = secondsToMinutes(w.elapsed_seconds);
+      if (mins !== null) parts.push(`— ${mins} min`);
       if (w.notes) parts.push(`— "${w.notes}"`);
       parts.push(`(id: ${w.id})`);
       return parts.join(' ');
@@ -178,7 +179,8 @@ tool(
       `**${w.name || '(unnamed)'}** — ${w.date}${w.time ? ` ${w.time}` : ''} [${w.type}]${isPlanned(w) ? ' (planned)' : ''}`,
       `- id: ${w.id}`,
     ];
-    if (w.duration_min) out.push(`- Duration: ${w.duration_min} min`);
+    const mins = secondsToMinutes(w.elapsed_seconds);
+    if (mins !== null) out.push(`- Duration: ${mins} min`);
     if (w.template_id) out.push(`- From template: ${w.template_id}`);
     if (w.copied_from) out.push(`- Copied from: ${w.copied_from}`);
     if (w.notes) out.push(`- Notes: ${w.notes}`);
@@ -487,13 +489,15 @@ tool(
     name: z.string().optional().describe('New name'),
     type: z.enum(WORKOUT_TYPES).optional().describe('New type'),
     notes: z.string().optional().describe('New notes (replaces existing)'),
-    duration_min: z.string().optional().describe('New duration in minutes'),
+    elapsed_seconds: z.string().optional().describe(
+      'New elapsed time, in SECONDS (the unit the sheet stores). 45 minutes is "2700".',
+    ),
     status: z
       .enum(['planned', 'completed'])
       .optional()
       .describe("'planned' marks it upcoming; 'completed' marks it done"),
   },
-  async ({ workout_id, date, name, type, notes, duration_min, status }) => {
+  async ({ workout_id, date, name, type, notes, elapsed_seconds, status }) => {
     const workouts = await fetchWorkouts();
     const w = resolveWorkout(workout_id, workouts);
 
@@ -508,7 +512,10 @@ tool(
     if (name !== undefined) { changes.push(`name "${w.name}" -> "${name}"`); updated.name = name; }
     if (type !== undefined) { changes.push(`type ${w.type} -> ${type}`); updated.type = type; }
     if (notes !== undefined) { changes.push('notes updated'); updated.notes = notes; }
-    if (duration_min !== undefined) { changes.push(`duration -> ${duration_min} min`); updated.duration_min = duration_min; }
+    if (elapsed_seconds !== undefined) {
+      changes.push(`duration -> ${secondsToMinutes(elapsed_seconds) ?? '(unset)'} min`);
+      updated.elapsed_seconds = elapsed_seconds;
+    }
     if (status !== undefined) {
       const s = status === 'planned' ? 'planned' : '';
       changes.push(`status ${w.status || 'completed'} -> ${status}`);

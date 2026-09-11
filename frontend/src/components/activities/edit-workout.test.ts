@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { workouts, sets, activeWorkoutId, activeWorkoutSets, isEditMode } from '../../state/store';
 import { enterEditMode, exitEditMode } from '../../state/actions';
 import type { WorkoutWithRow, SetWithRow } from '../../api/types';
+import { secondsToMinutes, minutesToSeconds } from '../../api/duration';
 
 const WORKOUT_WEIGHT: WorkoutWithRow = {
   id: 'w_test1',
@@ -11,10 +12,16 @@ const WORKOUT_WEIGHT: WorkoutWithRow = {
   name: 'Push Day',
   template_id: 'tpl_1',
   notes: 'Felt strong',
-  duration_min: '55',
+  elapsed_seconds: '3300',
   created: '2026-03-10T08:00:00.000Z',
   copied_from: '',
   status: '',
+  moving_seconds: '',
+  effort: '',
+  distance_m: '',
+  ascent_m: '',
+  descent_m: '',
+  avg_hr: '',
   sheetRow: 2,
 };
 
@@ -26,10 +33,16 @@ const WORKOUT_STRETCH: WorkoutWithRow = {
   name: 'Morning Stretch',
   template_id: '',
   notes: 'Quick stretch',
-  duration_min: '15',
+  elapsed_seconds: '900',
   created: '2026-03-11T09:00:00.000Z',
   copied_from: '',
   status: '',
+  moving_seconds: '',
+  effort: '',
+  distance_m: '',
+  ascent_m: '',
+  descent_m: '',
+  avg_hr: '',
   sheetRow: 3,
 };
 
@@ -164,35 +177,38 @@ describe('Edit workout - duration editing', () => {
     sets.value = [...SETS];
   });
 
-  it('original workout has duration_min preserved in signal', () => {
+  it('original workout has elapsed_seconds preserved in signal', () => {
     enterEditMode('w_test1');
     const w = workouts.value.find((w) => w.id === 'w_test1');
-    expect(w?.duration_min).toBe('55');
+    expect(w?.elapsed_seconds).toBe('3300');
+    expect(secondsToMinutes(w!.elapsed_seconds)).toBe(55);
   });
 
-  it('EditWorkoutData interface includes duration_min', () => {
-    // Verify the interface accepts duration_min
+  it('EditWorkoutData carries seconds, and 45 typed minutes round-trips', () => {
     const metadata: import('../../state/actions').EditWorkoutData = {
       date: '2026-03-10',
       name: 'Push Day',
       notes: 'Felt strong',
-      duration_min: '45',
+      elapsed_seconds: minutesToSeconds('45'),
     };
-    expect(metadata.duration_min).toBe('45');
+    expect(metadata.elapsed_seconds).toBe('2700');
+    expect(secondsToMinutes(metadata.elapsed_seconds)).toBe(45);
   });
 
-  it('EditWorkoutData allows empty duration_min', () => {
+  it('EditWorkoutData allows an empty duration, which stays empty not zero', () => {
     const metadata: import('../../state/actions').EditWorkoutData = {
       date: '2026-03-10',
       name: 'Push Day',
       notes: '',
-      duration_min: '',
+      elapsed_seconds: minutesToSeconds(''),
     };
-    expect(metadata.duration_min).toBe('');
+    expect(metadata.elapsed_seconds).toBe('');
+    expect(secondsToMinutes(metadata.elapsed_seconds)).toBeNull();
   });
 
-  it('non-weight workout has duration_min accessible for editing', () => {
+  it('non-weight workout has its duration accessible for editing', () => {
     const w = workouts.value.find((w) => w.id === 'w_test2');
-    expect(w?.duration_min).toBe('15');
+    expect(w?.elapsed_seconds).toBe('900');
+    expect(secondsToMinutes(w!.elapsed_seconds)).toBe(15);
   });
 });

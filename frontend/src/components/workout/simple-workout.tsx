@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/auth-context';
 import { startSimpleWorkout } from '../../state/actions';
 import { navigate } from '../../router/router';
 import { toLocalDateStr } from '../activities/activities-helpers';
+import { minutesToSeconds } from '../../api/duration';
 
 interface Props {
   workoutType: WorkoutType;
@@ -36,7 +37,7 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
         type: workoutType,
         name: name.trim() || TYPE_LABELS[workoutType] || workoutType,
         notes: notes.trim(),
-        duration_min: duration,
+        elapsed_seconds: minutesToSeconds(duration),
         date: safeDate,
       }, token);
       navigate('/');

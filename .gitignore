@@ -3,3 +3,6 @@ dist/
 .env.local
 .env.*.local
 *.log
+
+# one-time migration backups (scripts/migrate-*.mjs)
+scripts/.migrate-*-backup-*.json

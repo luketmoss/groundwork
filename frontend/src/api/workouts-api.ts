@@ -18,13 +18,13 @@ export class WorkoutRowMismatchError extends Error {
   }
 }
 
-// ── Workouts tab (A:K) ──────────────────────────────────────────────
+// ── Workouts tab (A:Q) ──────────────────────────────────────────────
 
 export async function fetchWorkouts(token: string): Promise<WorkoutWithRow[]> {
   if (isDemo()) return [...DEMO_WORKOUTS];
 
   return withReauth(token, async (t) => {
-    const rows = await sheetsGet('Workouts!A2:K', t);
+    const rows = await sheetsGet('Workouts!A2:Q', t);
     return rows.map((row, i) => ({
       id: row[0] || '',
       date: row[1] || '',
@@ -33,10 +33,16 @@ export async function fetchWorkouts(token: string): Promise<WorkoutWithRow[]> {
       name: row[4] || '',
       template_id: row[5] || '',
       notes: row[6] || '',
-      duration_min: row[7] || '',
+      elapsed_seconds: row[7] || '',
       created: row[8] || '',
       copied_from: row[9] || '',
       status: row[10] || '',
+      moving_seconds: row[11] || '',
+      effort: (row[12] || '') as Workout['effort'],
+      distance_m: row[13] || '',
+      ascent_m: row[14] || '',
+      descent_m: row[15] || '',
+      avg_hr: row[16] || '',
       sheetRow: i + 2,
     }));
   });
@@ -54,8 +60,36 @@ export async function findWorkoutRow(workoutId: string, token: string): Promise<
   return all.find((w) => w.id === workoutId) ?? null;
 }
 
+/**
+ * Builds a `Workouts!A:Q` row. Both the create and the edit path go through
+ * here: `sheetsAppend`/`sheetsUpdate` write every value handed to them
+ * regardless of the range, so two builders that had to agree — and didn't —
+ * is exactly how #100 nearly resurrected a deleted column.
+ */
+export function workoutToRow(w: Workout): (string | number)[] {
+  return [
+    w.id,
+    w.date,
+    w.time,
+    w.type,
+    w.name,
+    w.template_id,
+    w.notes,
+    w.elapsed_seconds,
+    w.created,
+    w.copied_from,
+    w.status,
+    w.moving_seconds,
+    w.effort,
+    w.distance_m,
+    w.ascent_m,
+    w.descent_m,
+    w.avg_hr,
+  ];
+}
+
 export async function createWorkout(
-  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; duration_min?: string; copied_from?: string; date?: string; status?: string },
+  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; elapsed_seconds?: string; copied_from?: string; date?: string; status?: string },
   token: string,
 ): Promise<Workout> {
   const id = `w_${crypto.randomUUID().slice(0, 8)}`;
@@ -72,27 +106,23 @@ export async function createWorkout(
     name: data.name,
     template_id: data.template_id || '',
     notes: data.notes || '',
-    duration_min: data.duration_min || '',
+    elapsed_seconds: data.elapsed_seconds || '',
     created,
     copied_from: data.copied_from || '',
     status: data.status || '',
+    // #101: nullable activity attributes. Populated by #102 (effort) and
+    // #103 (cardio); they ship empty and must never be defaulted.
+    moving_seconds: '',
+    effort: '',
+    distance_m: '',
+    ascent_m: '',
+    descent_m: '',
+    avg_hr: '',
   };
 
   if (!isDemo()) {
     await withReauth(token, (t) =>
-      sheetsAppend('Workouts!A:K', [[
-        workout.id,
-        workout.date,
-        workout.time,
-        workout.type,
-        workout.name,
-        workout.template_id,
-        workout.notes,
-        workout.duration_min,
-        workout.created,
-        workout.copied_from,
-        workout.status,
-      ]], t),
+      sheetsAppend('Workouts!A:Q', [workoutToRow(workout)], t),
     );
   }
 
@@ -116,19 +146,7 @@ export async function updateWorkout(
       throw new WorkoutRowMismatchError(workout.id);
     }
 
-    await sheetsUpdate(`Workouts!A${sheetRow}:K${sheetRow}`, [[
-      workout.id,
-      workout.date,
-      workout.time,
-      workout.type,
-      workout.name,
-      workout.template_id,
-      workout.notes,
-      workout.duration_min,
-      workout.created,
-      workout.copied_from,
-      workout.status,
-    ]], t);
+    await sheetsUpdate(`Workouts!A${sheetRow}:Q${sheetRow}`, [workoutToRow(workout)], t);
   });
 }
 
@@ -158,7 +176,7 @@ export async function deleteWorkoutRows(
   });
 }
 
-// ── Sets tab (A:K) ──────────────────────────────────────────────────
+// ── Sets tab (A:J) ──────────────────────────────────────────────────
 
 export async function fetchSets(token: string): Promise<SetWithRow[]> {
   if (isDemo()) return [...DEMO_SETS];
