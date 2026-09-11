@@ -3,7 +3,7 @@ import { workouts } from '../../state/store';
 import { saveSimpleWorkoutEdits } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
-import { secondsToMinutes, minutesToSeconds } from '../../api/duration';
+import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
 
 interface Props {
   workoutId: string;
@@ -15,9 +15,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
 
   const [date, setDate] = useState(workout?.date || '');
   const [name, setName] = useState(workout?.name || '');
-  const [duration, setDuration] = useState(
-    workout?.elapsed_seconds ? String(secondsToMinutes(workout.elapsed_seconds)) : '',
-  );
+  const [duration, setDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
   const [notes, setNotes] = useState(workout?.notes || '');
   const [saving, setSaving] = useState(false);
 
@@ -46,7 +44,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
   };
 
   const handleDiscard = () => {
-    if (date !== workout.date || name !== workout.name || duration !== (workout.elapsed_seconds ? String(secondsToMinutes(workout.elapsed_seconds)) : '') || notes !== workout.notes) {
+    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes) {
       if (!confirm('Discard changes? Your edits will not be saved.')) return;
     }
     navigate(`/history/${workoutId}`);

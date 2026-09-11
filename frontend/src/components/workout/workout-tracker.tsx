@@ -16,7 +16,7 @@ import { applyCopyDown } from './copy-down';
 import { isWarmupExercise } from './warmup';
 import { applyChangeSection, applyMoveUp, applyMoveDown } from './section-management';
 import { buildExerciseList, mergeWarmups } from './build-exercise-list';
-import { secondsToMinutes, minutesToSeconds } from '../../api/duration';
+import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
 
 interface Props {
   workoutId: string;
@@ -40,9 +40,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
   // Edit mode metadata
   const [editDate, setEditDate] = useState(workout?.date || '');
   const [editName, setEditName] = useState(workout?.name || '');
-  const [editDuration, setEditDuration] = useState(
-    workout?.elapsed_seconds ? String(secondsToMinutes(workout.elapsed_seconds)) : '',
-  );
+  const [editDuration, setEditDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
 
   // Auto-sync on reconnect (AC3)
   useEffect(() => {

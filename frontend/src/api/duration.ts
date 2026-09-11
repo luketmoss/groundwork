@@ -31,6 +31,16 @@ export function minutesToSeconds(minutes: string): string {
   return String(mins * 60);
 }
 
+/**
+ * Seconds → the string a minutes `<input>` should start with: the whole
+ * minutes, or `''` when unset. Going through `String(secondsToMinutes(x))`
+ * directly would put the literal `"null"` in the field for a garbled cell.
+ */
+export function secondsToMinutesInput(elapsedSeconds: string): string {
+  const mins = secondsToMinutes(elapsedSeconds);
+  return mins === null ? '' : String(mins);
+}
+
 /** `"62 min"`, or `''` when there is nothing to show. */
 export function formatDuration(elapsedSeconds: string): string {
   const mins = secondsToMinutes(elapsedSeconds);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { secondsToMinutes, minutesToSeconds, formatDuration } from './duration';
+import { secondsToMinutes, minutesToSeconds, secondsToMinutesInput, formatDuration } from './duration';
 
 // Issue #101 — Workouts!H stores elapsed seconds; the UI reads and writes
 // whole minutes. These are the only two places that conversion happens.
@@ -63,5 +63,20 @@ describe('formatDuration', () => {
 
   it('renders nothing when there is no duration', () => {
     expect(formatDuration('')).toBe('');
+  });
+});
+
+describe('secondsToMinutesInput', () => {
+  it('gives a minutes field its starting value', () => {
+    expect(secondsToMinutesInput('3720')).toBe('62');
+  });
+
+  it('gives an empty field for an unset duration', () => {
+    expect(secondsToMinutesInput('')).toBe('');
+  });
+
+  // Guards the literal string "null" reaching an input from a garbled cell.
+  it('gives an empty field for a non-numeric cell, never the text "null"', () => {
+    expect(secondsToMinutesInput('abc')).toBe('');
   });
 });
