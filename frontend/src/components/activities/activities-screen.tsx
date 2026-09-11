@@ -12,12 +12,18 @@ import {
   getLastWeekTotalMinutes,
   getMonthWorkoutCount,
   getMonthTotalMinutes,
+  getWeekCardioWorkouts,
+  getWeekCardioDistance,
+  getWeekCardioAscent,
+  getWeeklyTargetProgress,
+  coverageSuffix,
   toLocalDateStr,
   formatPlannedDate,
   isOverdue,
 } from './activities-helpers';
 import { LabelBadge } from '../shared/label-badge';
 import { formatDuration } from '../../api/duration';
+import { formatDistance, formatElevation, metersToMiles, metersToFeet } from '../../api/units';
 
 /** Type-color map for inset box-shadow accent (light theme). */
 const TYPE_COLORS: Record<string, { light: string; dark: string }> = {
@@ -59,11 +65,27 @@ export function ActivitiesScreen() {
   const monthCount = getMonthWorkoutCount(completed, todayStr);
   const monthMinutes = getMonthTotalMinutes(completed, todayStr);
 
+  // #105 — this week only; last week and this month keep their existing cells.
+  const cardioCount = getWeekCardioWorkouts(completed, todayStr).length;
+  const weekDistance = getWeekCardioDistance(completed, todayStr);
+  const weekAscent = getWeekCardioAscent(completed, todayStr);
+  const targets = getWeeklyTargetProgress(completed, todayStr);
+
+  // AC5: the visual cells are aria-hidden and the bar carries one label, so
+  // anything added to the markup alone is silently invisible to screen
+  // readers. Every figure below appears in both.
   const statsAriaLabel = [
     `${pluralWorkout(weekCount)} this week, ${weekMinutes} minutes.`,
     `${pluralWorkout(lastWeekCount)} last week, ${lastWeekMinutes} minutes.`,
     `${pluralWorkout(monthCount)} this month, ${monthMinutes} minutes.`,
-  ].join(' ');
+    cardioCount > 0 && weekDistance.total > 0
+      ? `${metersToMiles(String(weekDistance.total))} miles across ${weekDistance.withData} of ${weekDistance.of} rides.`
+      : '',
+    cardioCount > 0 && weekAscent.total > 0
+      ? `${metersToFeet(String(weekAscent.total))?.toLocaleString('en-US')} feet of ascent across ${weekAscent.withData} of ${weekAscent.of} rides.`
+      : '',
+    `This week's target: ${targets.map((t) => `${t.done} of ${t.target} ${t.label}`).join(', ')}.`,
+  ].filter(Boolean).join(' ');
 
   return (
     <div class="screen activities-screen">
@@ -115,6 +137,35 @@ export function ActivitiesScreen() {
             <span class="stats-bar-label">This month</span>
             <span class="stats-bar-value">{pluralWorkout(monthCount)} · {monthMinutes} min</span>
           </div>
+        </div>
+
+        {/* #105 — full-width rows: each stats-bar cell gets only ~103px at
+            375px, and the existing value string already needs ~120px. */}
+        {cardioCount > 0 && (weekDistance.total > 0 || weekAscent.total > 0) && (
+          <div class="stats-row" aria-hidden="true">
+            <span class="stats-bar-label">Cardio this week</span>
+            <span class="stats-row-value">
+              {weekDistance.total > 0 && (
+                <span>{formatDistance(String(weekDistance.total))}{coverageSuffix(weekDistance)}</span>
+              )}
+              {weekAscent.total > 0 && (
+                <span>↑ {formatElevation(String(weekAscent.total))}{coverageSuffix(weekAscent)}</span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* Rendered every week, including quiet ones — progress against a
+            target is useful precisely when nothing has happened. */}
+        <div class="stats-row" aria-hidden="true">
+          <span class="stats-bar-label">Target</span>
+          <span class="stats-row-value">
+            {targets.map((t) => (
+              <span key={t.label} class={t.done >= t.target ? 'target-met' : undefined}>
+                {t.done}/{t.target} {t.label}
+              </span>
+            ))}
+          </span>
         </div>
       </div>
 
