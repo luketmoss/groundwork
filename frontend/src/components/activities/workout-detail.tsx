@@ -163,6 +163,12 @@ export function WorkoutDetail({ workoutId }: Props) {
           {!isPlanned && workout.elapsed_seconds && (
             <span class="detail-duration">{formatDuration(workout.elapsed_seconds)}</span>
           )}
+          {/* AC2: unset shows nothing at all — no placeholder implying a value
+              was considered. A peer of date/time/duration, not a summary of
+              the sets (AC4). */}
+          {!isPlanned && workout.effort && (
+            <span class={`effort-${workout.effort.toLowerCase()}`}>{workout.effort}</span>
+          )}
         </div>
         {workout.notes && (
           <p class="detail-notes">{workout.notes}</p>

@@ -4,6 +4,8 @@ import { saveSimpleWorkoutEdits } from '../../state/actions';
 import { useAuth } from '../../auth/auth-context';
 import { navigate } from '../../router/router';
 import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
+import { EffortToggle } from '../shared/effort-toggle';
+import type { Effort } from '../../api/types';
 
 interface Props {
   workoutId: string;
@@ -17,6 +19,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
   const [name, setName] = useState(workout?.name || '');
   const [duration, setDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
   const [notes, setNotes] = useState(workout?.notes || '');
+  const [effort, setEffort] = useState<Effort | ''>(workout?.effort || '');
   const [saving, setSaving] = useState(false);
 
   if (!workout) {
@@ -34,7 +37,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
     if (!token) return;
     setSaving(true);
     try {
-      await saveSimpleWorkoutEdits(workoutId, { date, name: name.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(duration) }, token);
+      await saveSimpleWorkoutEdits(workoutId, { date, name: name.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(duration), effort }, token);
       navigate(`/history/${workoutId}`);
     } catch {
       // Error toast shown by action
@@ -44,7 +47,7 @@ export function EditWorkoutForm({ workoutId }: Props) {
   };
 
   const handleDiscard = () => {
-    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes) {
+    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes || effort !== (workout.effort || '')) {
       if (!confirm('Discard changes? Your edits will not be saved.')) return;
     }
     navigate(`/history/${workoutId}`);
@@ -102,6 +105,16 @@ export function EditWorkoutForm({ workoutId }: Props) {
           placeholder="e.g. 30"
           value={duration}
           onInput={(e) => setDuration((e.target as HTMLInputElement).value)}
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Session Effort (optional)</label>
+        <EffortToggle
+          value={effort}
+          onChange={setEffort}
+          size="session"
+          label="Session effort"
         />
       </div>
 

@@ -8,7 +8,7 @@ import { fetchWorkouts, fetchSets, createWorkout as createWorkoutApi, updateWork
 import { toLocalDateStr } from '../components/activities/activities-helpers';
 import { colorKeyFromName } from '../api/label-colors';
 import type { TemplateExerciseInput } from '../api/templates-api';
-import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, Workout, WorkoutWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise } from '../api/types';
+import type { ExerciseWithRow, LabelWithRow, TemplateRowWithRow, Workout, WorkoutWithRow, WorkoutType, WorkoutSet, SetWithRow, BuilderExercise, Effort } from '../api/types';
 import { ReauthFailedError } from '../auth/reauth';
 import { SheetsApiError } from '../api/sheets';
 
@@ -634,6 +634,7 @@ export async function removeSet(
 export async function finishWorkout(
   workoutId: string,
   notes: string,
+  effort: Effort | '',
   token: string,
 ): Promise<void> {
   try {
@@ -651,6 +652,7 @@ export async function finishWorkout(
       notes,
       status: '',
       elapsed_seconds: String(elapsedSeconds > 0 ? elapsedSeconds : ''),
+      effort,
     };
 
     await updateWorkoutApi(workout.sheetRow, updated, token);
@@ -827,7 +829,7 @@ export async function copyWorkout(
 }
 
 export async function startSimpleWorkout(
-  data: { type: WorkoutType; name: string; notes: string; elapsed_seconds: string; date?: string },
+  data: { type: WorkoutType; name: string; notes: string; elapsed_seconds: string; effort: Effort | ''; date?: string },
   token: string,
 ): Promise<void> {
   try {
@@ -836,6 +838,7 @@ export async function startSimpleWorkout(
       name: data.name,
       notes: data.notes,
       elapsed_seconds: data.elapsed_seconds,
+      effort: data.effort,
       date: data.date,
     }, token);
 
@@ -893,6 +896,8 @@ export interface EditWorkoutData {
   notes: string;
   /** Seconds, as stored. Forms convert from typed minutes at their boundary. */
   elapsed_seconds: string;
+  /** '' is unset, and a legitimate permanent state — never defaulted. */
+  effort: Effort | '';
 }
 
 export interface EditSetData {
@@ -925,6 +930,7 @@ export async function saveWorkoutEdits(
       name: metadata.name,
       notes: metadata.notes,
       elapsed_seconds: metadata.elapsed_seconds,
+      effort: metadata.effort,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 
@@ -1039,6 +1045,7 @@ export async function saveSimpleWorkoutEdits(
       name: metadata.name,
       notes: metadata.notes,
       elapsed_seconds: metadata.elapsed_seconds,
+      effort: metadata.effort,
     };
     await updateWorkoutApi(workout.sheetRow, updatedWorkout, token);
 

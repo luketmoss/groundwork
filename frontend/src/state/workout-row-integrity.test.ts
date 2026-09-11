@@ -182,7 +182,7 @@ describe('AC2: a workout write never targets another workout\'s row', () => {
     workouts.value = [staleWorkout];
     activeWorkoutId.value = 'w_ghost';
 
-    await expect(finishWorkout('w_ghost', 'notes', TOKEN)).rejects.toThrow();
+    await expect(finishWorkout('w_ghost', 'notes', '', TOKEN)).rejects.toThrow();
 
     // Row 2 must still belong to w_real, untouched
     expect(sheet.Workouts[0][0]).toBe('w_real');
@@ -232,7 +232,7 @@ describe('AC3: copying a workout after a delete creates exactly one new entry', 
     const copyId = await copyWorkout('w_week1', TOKEN);
 
     // Finish the original — this is the write that used to clobber the copy's row
-    await finishWorkout('w_week1', '', TOKEN);
+    await finishWorkout('w_week1', '', '', TOKEN);
 
     const ids = sheet.Workouts.map((row) => row[0]);
     expect(new Set(ids).size).toBe(ids.length); // no id appears twice

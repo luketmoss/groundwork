@@ -5,6 +5,8 @@ import { startSimpleWorkout } from '../../state/actions';
 import { navigate } from '../../router/router';
 import { toLocalDateStr } from '../activities/activities-helpers';
 import { minutesToSeconds } from '../../api/duration';
+import { EffortToggle } from '../shared/effort-toggle';
+import type { Effort } from '../../api/types';
 
 interface Props {
   workoutType: WorkoutType;
@@ -26,6 +28,7 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
   const [date, setDate] = useState(todayStr);
   const [notes, setNotes] = useState('');
   const [duration, setDuration] = useState('');
+  const [effort, setEffort] = useState<Effort | ''>('');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -38,6 +41,7 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
         name: name.trim() || TYPE_LABELS[workoutType] || workoutType,
         notes: notes.trim(),
         elapsed_seconds: minutesToSeconds(duration),
+        effort,
         date: safeDate,
       }, token);
       navigate('/');
@@ -103,6 +107,16 @@ export function SimpleWorkout({ workoutType, onBack }: Props) {
           placeholder="e.g. 30"
           value={duration}
           onInput={(e) => setDuration((e.target as HTMLInputElement).value)}
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Session Effort (optional)</label>
+        <EffortToggle
+          value={effort}
+          onChange={setEffort}
+          size="session"
+          label="Session effort"
         />
       </div>
 

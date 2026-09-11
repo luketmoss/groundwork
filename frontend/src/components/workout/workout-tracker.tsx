@@ -17,6 +17,7 @@ import { isWarmupExercise } from './warmup';
 import { applyChangeSection, applyMoveUp, applyMoveDown } from './section-management';
 import { buildExerciseList, mergeWarmups } from './build-exercise-list';
 import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
+import { EffortToggle } from '../shared/effort-toggle';
 
 interface Props {
   workoutId: string;
@@ -41,6 +42,8 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
   const [editDate, setEditDate] = useState(workout?.date || '');
   const [editName, setEditName] = useState(workout?.name || '');
   const [editDuration, setEditDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
+  const [editEffort, setEditEffort] = useState<Effort | ''>(workout?.effort || '');
+  const [finishEffort, setFinishEffort] = useState<Effort | ''>('');
 
   // Auto-sync on reconnect (AC3)
   useEffect(() => {
@@ -498,7 +501,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
 
       await saveWorkoutEdits(
         workoutId,
-        { date: editDate, name: editName.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(editDuration) },
+        { date: editDate, name: editName.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(editDuration), effort: editEffort },
         editedSets,
         token,
       );
@@ -537,7 +540,7 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
         }
       }
 
-      await finishWorkout(workoutId, notes, token);
+      await finishWorkout(workoutId, notes, finishEffort, token);
       navigate('/');
     } catch {
       // Error toast shown by action
@@ -660,6 +663,15 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             />
           </div>
           <div class="form-group">
+            <label class="form-label">Session Effort (optional)</label>
+            <EffortToggle
+              value={editEffort}
+              onChange={setEditEffort}
+              size="session"
+              label="Session effort"
+            />
+          </div>
+          <div class="form-group">
             <label class="form-label">Notes</label>
             <textarea
               class="form-textarea"
@@ -677,6 +689,8 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
         <FinishWorkoutModal
           notes={notes}
           onNotesChange={(e) => setNotes((e.target as HTMLTextAreaElement).value)}
+          effort={finishEffort}
+          onEffortChange={setFinishEffort}
           onFinish={handleFinish}
           onCancel={() => {
             setShowFinishForm(false);

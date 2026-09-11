@@ -1,6 +1,6 @@
 // Workouts + Sets domain API — wraps Sheets REST calls with demo-mode fallback.
 
-import type { Workout, WorkoutWithRow, WorkoutSet, SetWithRow, WorkoutType } from './types';
+import type { Workout, WorkoutWithRow, WorkoutSet, SetWithRow, WorkoutType, Effort } from './types';
 import { sheetsGet, sheetsAppend, sheetsUpdate, sheetsDeleteRow, getSheetId, withReauth } from './sheets';
 import { isDemo, DEMO_WORKOUTS, DEMO_SETS } from './demo-data';
 import { toLocalDateStr } from '../components/activities/activities-helpers';
@@ -89,7 +89,7 @@ export function workoutToRow(w: Workout): (string | number)[] {
 }
 
 export async function createWorkout(
-  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; elapsed_seconds?: string; copied_from?: string; date?: string; status?: string },
+  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; elapsed_seconds?: string; effort?: Effort | ''; copied_from?: string; date?: string; status?: string },
   token: string,
 ): Promise<Workout> {
   const id = `w_${crypto.randomUUID().slice(0, 8)}`;
@@ -113,7 +113,7 @@ export async function createWorkout(
     // #101: nullable activity attributes. Populated by #102 (effort) and
     // #103 (cardio); they ship empty and must never be defaulted.
     moving_seconds: '',
-    effort: '',
+    effort: data.effort || '',
     distance_m: '',
     ascent_m: '',
     descent_m: '',

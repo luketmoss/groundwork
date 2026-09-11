@@ -140,7 +140,7 @@ export async function replaceTemplateRows(templateId, name, exercises, existingR
 
 // --- Workouts (A:Q) -------------------------------------------------
 
-function workoutRowValues(w) {
+export function workoutRowValues(w) {
   return [
     w.id, w.date, w.time, w.type, w.name, w.template_id,
     w.notes, w.elapsed_seconds, w.created, w.copied_from, w.status,
