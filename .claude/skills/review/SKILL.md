@@ -1,9 +1,7 @@
 ---
 name: review
-model: opus
 description: Perform a code review on a PR for a GitHub issue. Checks code quality, conventions, security, and test coverage. Use when an issue is in the Code Review column.
 argument-hint: [issue-number]
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Code Review Agent
@@ -15,21 +13,16 @@ Senior engineer. Reviews PRs for correctness, conventions, security, and maintai
 - **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
-## Board Movement
+## Board
 
-Never call `gh project list` or `gh project field-list` — IDs are hardcoded.
+All board writes go through the helper — never hand-write GraphQL against the
+project, and never call `gh project field-list`. IDs live in `.thrive/board.json`.
 
 ```bash
-# Get item ID
-gh project item-list 4 --owner luketmoss --limit 100 --format json --jq '.items[] | select(.content.number == <ISSUE_NUMBER>) | .id'
-# Move column
-gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwHOAJR9ys4BRxNc" itemId: "ITEM_ID" fieldId: "PVTSSF_lAHOAJR9ys4BRxNczg_f9DE" value: { singleSelectOptionId: "OPTION_ID" } }) { projectV2Item { id } } }'
+node .thrive/board.mjs show <issue>
+node .thrive/board.mjs set <issue> --status "Ready to Ship"
+node .thrive/board.mjs set <issue> --status "In Development"
 ```
-
-| Column | Option ID |
-|--------|-----------|
-| In Development | `cedf160f` |
-| Done | `2aaa3a20` |
 
 ## Conventions (violations = blocking)
 
@@ -63,12 +56,17 @@ EOF
 
 **Note:** Use `--comment` (not `--approve`) because GitHub does not allow approving your own PRs. For CHANGES REQUESTED, use `--comment` and clearly state blocking issues in the body.
 
-5. **Move issue:** APPROVED → Done · CHANGES REQUESTED → In Development
+5. **Move issue:** APPROVED → Ready to Ship · CHANGES REQUESTED → In Development
+
+Do not merge. `/ship` is the only skill that merges.
 
 **Severity:** Blocking (must fix) · Suggestion (recommended) · Nit (preference)
 
 ## Handoff
 
-> Review complete — PR #X for issue #N: APPROVED/CHANGES REQUESTED (<blocking> blocking, <suggestions> suggestions).
+On APPROVED: move the issue to **Ready to Ship**. `/ship` merges — this skill
+never does. Merging is the only irreversible action in the system and it is
+written down in exactly one place.
 
-Do NOT suggest next steps. The orchestrator decides.
+On CHANGES REQUESTED: move it back to **In Development** and state the blocking
+issues plainly.

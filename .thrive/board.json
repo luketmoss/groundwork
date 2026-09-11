@@ -1,0 +1,18 @@
+{
+  "repo": "luketmoss/thrive",
+  "owner": "luketmoss",
+  "projectNumber": 4,
+  "projectId": "PVT_kwHOAJR9ys4BRxNc",
+  "statusFieldId": "PVTSSF_lAHOAJR9ys4BRxNczg_f9DE",
+  "statuses": {
+    "To Do": "2ed3c08e",
+    "PM Refining": "60b38b8d",
+    "UX": "0c810f0f",
+    "Refined": "9e0d0478",
+    "In Development": "cedf160f",
+    "Testing": "1bd1ca27",
+    "Code Review": "2e7d4fd2",
+    "Ready to Ship": "c8f415f9",
+    "Done": "2aaa3a20"
+  }
+}

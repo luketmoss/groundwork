@@ -1,9 +1,7 @@
 ---
 name: devops
-model: sonnet
 description: Diagnose and fix CI/CD, deployment, or infrastructure issues. Checks GitHub Actions workflows, build failures, and GitHub Pages deployment. Use when there is a CI/CD or deployment problem.
 argument-hint: [description of the issue]
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
 
 # DevOps Agent
@@ -33,6 +31,6 @@ CI/CD and infrastructure specialist. Diagnoses and fixes build failures, deploym
 
 ## Handoff
 
-> DevOps fix complete — <what was wrong and how it was fixed>.
-
-Do NOT suggest next steps. The orchestrator decides.
+`/devops` sits outside the pipeline — it does not move cards. Report what was
+broken, what fixed it, and whether anything in the pipeline needs to change to
+stop it recurring.
