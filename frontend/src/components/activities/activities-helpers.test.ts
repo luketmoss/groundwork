@@ -8,6 +8,11 @@ import {
   getLastWeekTotalMinutes,
   getMonthWorkoutCount,
   getMonthTotalMinutes,
+  getWeekCardioDistance,
+  getWeekCardioAscent,
+  getWeeklyTargetProgress,
+  coverageSuffix,
+  cardioNoun,
   getWorkoutTags,
   EQUIPMENT_TAGS,
   toLocalDateStr,
@@ -657,5 +662,173 @@ describe('sortPlannedWorkouts', () => {
     const before = list.map(w => w.id);
     sortPlannedWorkouts(list);
     expect(list.map(w => w.id)).toEqual(before);
+  });
+});
+
+// Issue #105 — cardio aggregation with coverage.
+describe('cardio aggregation (#105)', () => {
+  const TODAY = '2026-03-15'; // a Sunday; the Mon–Sun week is 03-09..03-15
+
+  function ride(overrides: Partial<WorkoutWithRow> = {}): WorkoutWithRow {
+    return makeWorkout({ type: 'bike', date: '2026-03-11', ...overrides });
+  }
+
+  describe('getWeekCardioDistance', () => {
+    // AC4: all workouts have data
+    it('sums every ride when all recorded a distance', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', distance_m: '16093' }),
+        ride({ id: 'w2', distance_m: '8047' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 24140, withData: 2, of: 2 });
+    });
+
+    // AC4: none have data — skipped, not counted as zero
+    it('reports a zero total but full denominator when none recorded one', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', distance_m: '' }),
+        ride({ id: 'w2', distance_m: '' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 0, withData: 0, of: 2 });
+    });
+
+    // AC4: some have data — the gap must be visible, not inferred
+    it('skips rides with no distance while still counting them in the denominator', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', distance_m: '16093' }),
+        ride({ id: 'w2', distance_m: '' }),
+        ride({ id: 'w3', distance_m: '8047' }),
+        ride({ id: 'w4', distance_m: '' }),
+        ride({ id: 'w5', distance_m: '4828' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 28968, withData: 3, of: 5 });
+    });
+
+    // AC4: the period is empty
+    it('reports an empty period as zero of zero', () => {
+      expect(getWeekCardioDistance([], TODAY)).toEqual({ total: 0, withData: 0, of: 0 });
+    });
+
+    it('ignores non-cardio workouts entirely', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', distance_m: '16093' }),
+        makeWorkout({ id: 'w2', type: 'weight', date: '2026-03-11' }),
+        makeWorkout({ id: 'w3', type: 'stretch', date: '2026-03-12' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 16093, withData: 1, of: 1 });
+    });
+
+    it('counts hikes alongside rides', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', distance_m: '16093' }),
+        makeWorkout({ id: 'w2', type: 'hike', date: '2026-03-12', distance_m: '8047' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 24140, withData: 2, of: 2 });
+    });
+
+    it('excludes activities outside the week', () => {
+      const result = getWeekCardioDistance([
+        ride({ id: 'w1', date: '2026-03-11', distance_m: '16093' }),
+        ride({ id: 'w2', date: '2026-03-01', distance_m: '99999' }),
+      ], TODAY);
+      expect(result).toEqual({ total: 16093, withData: 1, of: 1 });
+    });
+  });
+
+  describe('getWeekCardioAscent', () => {
+    // AC2: ascent coverage is independent of distance coverage
+    it('counts ascent independently of distance', () => {
+      const workouts = [
+        ride({ id: 'w1', distance_m: '16093', ascent_m: '457' }),
+        ride({ id: 'w2', distance_m: '8047', ascent_m: '' }),
+      ];
+      expect(getWeekCardioDistance(workouts, TODAY)).toEqual({ total: 24140, withData: 2, of: 2 });
+      expect(getWeekCardioAscent(workouts, TODAY)).toEqual({ total: 457, withData: 1, of: 2 });
+    });
+
+    it('reports an empty period as zero of zero', () => {
+      expect(getWeekCardioAscent([], TODAY)).toEqual({ total: 0, withData: 0, of: 0 });
+    });
+  });
+
+  describe('getWeeklyTargetProgress', () => {
+    // AC3: the exact example from the acceptance criteria
+    it('reads 2/3 lifts, 1/2 rides, 0/1 stretch', () => {
+      const result = getWeeklyTargetProgress([
+        makeWorkout({ id: 'w1', type: 'weight', date: '2026-03-09' }),
+        makeWorkout({ id: 'w2', type: 'weight', date: '2026-03-10' }),
+        makeWorkout({ id: 'w3', type: 'bike', date: '2026-03-11' }),
+      ], TODAY);
+      expect(result).toEqual([
+        { label: 'lifts', done: 2, target: 3 },
+        { label: 'rides', done: 1, target: 2 },
+        { label: 'stretch', done: 0, target: 1 },
+      ]);
+    });
+
+    // AC3: rendered every week, including quiet ones
+    it('still reports progress in a week with no activity at all', () => {
+      expect(getWeeklyTargetProgress([], TODAY)).toEqual([
+        { label: 'lifts', done: 0, target: 3 },
+        { label: 'rides', done: 0, target: 2 },
+        { label: 'stretch', done: 0, target: 1 },
+      ]);
+    });
+
+    // AC3: over-target is information, not an error
+    it('reports an over-target week as-is rather than clamping', () => {
+      const result = getWeeklyTargetProgress([
+        makeWorkout({ id: 'w1', type: 'weight', date: '2026-03-09' }),
+        makeWorkout({ id: 'w2', type: 'weight', date: '2026-03-10' }),
+        makeWorkout({ id: 'w3', type: 'weight', date: '2026-03-11' }),
+        makeWorkout({ id: 'w4', type: 'weight', date: '2026-03-12' }),
+      ], TODAY);
+      expect(result[0]).toEqual({ label: 'lifts', done: 4, target: 3 });
+    });
+
+    it('does not count hikes towards the ride target', () => {
+      const result = getWeeklyTargetProgress([
+        makeWorkout({ id: 'w1', type: 'hike', date: '2026-03-11' }),
+      ], TODAY);
+      expect(result[1]).toEqual({ label: 'rides', done: 0, target: 2 });
+    });
+  });
+});
+
+describe('coverageSuffix (#105)', () => {
+  // AC2: at full coverage the total stands alone — coverage is not shouted.
+  it('renders nothing when every activity contributed', () => {
+    expect(coverageSuffix({ total: 100, withData: 5, of: 5 })).toBe('');
+  });
+
+  // AC2: names what is being counted, so it cannot read as "4 of 5 miles".
+  it('names what is counted when there is a gap', () => {
+    expect(coverageSuffix({ total: 100, withData: 4, of: 5 })).toBe(' · 4/5 rides');
+  });
+
+  it('reports a total nobody contributed to', () => {
+    expect(coverageSuffix({ total: 0, withData: 0, of: 3 })).toBe(' · 0/3 rides');
+  });
+
+  it('renders nothing for an empty period', () => {
+    expect(coverageSuffix({ total: 0, withData: 0, of: 0 })).toBe('');
+  });
+});
+
+describe('cardioNoun (#105)', () => {
+  const bike = (id: string) => makeWorkout({ id, type: 'bike' });
+  const hike = (id: string) => makeWorkout({ id, type: 'hike' });
+
+  // AC2: coverage must name what is actually being counted.
+  it('says rides when the week is all rides', () => {
+    expect(cardioNoun([bike('w1'), bike('w2')])).toBe('rides');
+  });
+
+  it('says hikes when the week is all hikes, not rides', () => {
+    expect(cardioNoun([hike('w1'), hike('w2')])).toBe('hikes');
+  });
+
+  it('falls back to a neutral noun for a mixed week', () => {
+    expect(cardioNoun([bike('w1'), hike('w2')])).toBe('activities');
   });
 });

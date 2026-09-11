@@ -332,3 +332,130 @@ export function sortPlannedWorkouts(workouts: WorkoutWithRow[]): WorkoutWithRow[
       a.id.localeCompare(b.id),
   );
 }
+
+// ── Cardio aggregation (#105) ────────────────────────────────────────
+
+/**
+ * A total that cannot be rendered without its coverage.
+ *
+ * `withData` of `of` activities contributed to `total`; the rest recorded
+ * nothing and were skipped, not counted as zero. Returning the pair in one
+ * value is deliberate — a caller cannot reach for a bare total by accident,
+ * and "58 mi" alone would silently overstate a week where only four of five
+ * rides were measured.
+ */
+export interface CoveredTotal {
+  total: number;
+  withData: number;
+  of: number;
+}
+
+/**
+ * Names the activities being counted, so "2/3 rides" is accurate rather than
+ * merely conventional — a week of hikes must not report rides.
+ */
+export function cardioNoun(cardio: WorkoutWithRow[]): string {
+  const types = new Set(cardio.map((w) => w.type));
+  if (types.size === 1) return types.has('bike') ? 'rides' : 'hikes';
+  return 'activities';
+}
+
+/**
+ * Renders coverage as a suffix naming *what* is counted — " · 4/5 rides",
+ * never "(4 of 5)", which reads as four of five *miles*.
+ *
+ * Returns '' at full coverage: the total then stands alone, because coverage
+ * is information about a gap and there is no gap to report.
+ */
+export function coverageSuffix(c: CoveredTotal, noun = 'rides'): string {
+  return c.withData === c.of ? '' : ` · ${c.withData}/${c.of} ${noun}`;
+}
+
+/** Activities that can carry cardio attributes; see #103. */
+const CARDIO_TYPES = new Set(['bike', 'hike']);
+
+export function isCardioWorkout(w: WorkoutWithRow): boolean {
+  return CARDIO_TYPES.has(w.type);
+}
+
+/**
+ * Sums one nullable numeric field across the cardio activities in a set,
+ * skipping those that recorded nothing while still counting them in `of`,
+ * so the gap stays visible rather than having to be inferred.
+ */
+function sumCovered(
+  cardio: WorkoutWithRow[],
+  field: (w: WorkoutWithRow) => string,
+): CoveredTotal {
+  let total = 0;
+  let withData = 0;
+  for (const w of cardio) {
+    const n = parseInt(field(w), 10);
+    if (isNaN(n)) continue;
+    total += n;
+    withData += 1;
+  }
+  return { total, withData, of: cardio.length };
+}
+
+/** The cardio activities in the Mon–Sun week containing `todayStr`. */
+export function getWeekCardioWorkouts(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): WorkoutWithRow[] {
+  const weekDates = new Set(getWeekStreak(allWorkouts, todayStr).map((d) => d.date));
+  return allWorkouts.filter((w) => weekDates.has(w.date) && isCardioWorkout(w));
+}
+
+/** Total distance in meters for this week's cardio, with coverage. */
+export function getWeekCardioDistance(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): CoveredTotal {
+  return sumCovered(getWeekCardioWorkouts(allWorkouts, todayStr), (w) => w.distance_m);
+}
+
+/** Total ascent in meters for this week's cardio, with its own coverage. */
+export function getWeekCardioAscent(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): CoveredTotal {
+  // Counted independently of distance — a ride may have one and not the other.
+  return sumCovered(getWeekCardioWorkouts(allWorkouts, todayStr), (w) => w.ascent_m);
+}
+
+// ── Weekly session target (#105) ─────────────────────────────────────
+
+/**
+ * Hardcoded on purpose. #100 removed the `Config` tab as dead, so there is
+ * nowhere to persist a per-user target; making it configurable needs its own
+ * issue with somewhere to store it.
+ */
+export const WEEKLY_TARGET = { weight: 3, bike: 2, stretch: 1 } as const;
+
+export interface TargetProgress {
+  label: string;
+  done: number;
+  target: number;
+}
+
+/**
+ * Progress against the weekly target, rendered every week including quiet
+ * ones — progress against a target is useful precisely when nothing has
+ * happened yet. Exceeding a target reports as-is (`4/3`); an over-target week
+ * is information, not an error.
+ */
+export function getWeeklyTargetProgress(
+  allWorkouts: WorkoutWithRow[],
+  todayStr: string,
+): TargetProgress[] {
+  const weekDates = new Set(getWeekStreak(allWorkouts, todayStr).map((d) => d.date));
+  const inWeek = allWorkouts.filter((w) => weekDates.has(w.date));
+  const count = (type: string) => inWeek.filter((w) => w.type === type).length;
+
+  return [
+    { label: 'lifts', done: count('weight'), target: WEEKLY_TARGET.weight },
+    { label: 'rides', done: count('bike'), target: WEEKLY_TARGET.bike },
+    { label: 'stretch', done: count('stretch'), target: WEEKLY_TARGET.stretch },
+  ];
+}
