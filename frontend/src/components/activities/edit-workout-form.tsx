@@ -6,6 +6,9 @@ import { navigate } from '../../router/router';
 import { secondsToMinutesInput, minutesToSeconds } from '../../api/duration';
 import { EffortToggle } from '../shared/effort-toggle';
 import type { Effort } from '../../api/types';
+import { CardioFields, storedToCardio } from '../shared/cardio-fields';
+import type { CardioValues } from '../shared/cardio-fields';
+import { milesToMeters, feetToMeters, bpmToStored, metersToMilesInput, metersToFeetInput } from '../../api/units';
 
 interface Props {
   workoutId: string;
@@ -20,6 +23,8 @@ export function EditWorkoutForm({ workoutId }: Props) {
   const [duration, setDuration] = useState(secondsToMinutesInput(workout?.elapsed_seconds ?? ''));
   const [notes, setNotes] = useState(workout?.notes || '');
   const [effort, setEffort] = useState<Effort | ''>(workout?.effort || '');
+  const [cardio, setCardio] = useState<CardioValues>(() => storedToCardio(workout));
+  const patchCardio = (patch: Partial<CardioValues>) => setCardio((c) => ({ ...c, ...patch }));
   const [saving, setSaving] = useState(false);
 
   if (!workout) {
@@ -37,7 +42,14 @@ export function EditWorkoutForm({ workoutId }: Props) {
     if (!token) return;
     setSaving(true);
     try {
-      await saveSimpleWorkoutEdits(workoutId, { date, name: name.trim(), notes: notes.trim(), elapsed_seconds: minutesToSeconds(duration), effort }, token);
+      await saveSimpleWorkoutEdits(workoutId, {
+        date, name: name.trim(), notes: notes.trim(),
+        elapsed_seconds: minutesToSeconds(duration), effort,
+        distance_m: milesToMeters(cardio.distance),
+        ascent_m: feetToMeters(cardio.ascent),
+        descent_m: feetToMeters(cardio.descent),
+        avg_hr: bpmToStored(cardio.avgHr),
+      }, token);
       navigate(`/history/${workoutId}`);
     } catch {
       // Error toast shown by action
@@ -47,7 +59,8 @@ export function EditWorkoutForm({ workoutId }: Props) {
   };
 
   const handleDiscard = () => {
-    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes || effort !== (workout.effort || '')) {
+    if (date !== workout.date || name !== workout.name || duration !== secondsToMinutesInput(workout.elapsed_seconds) || notes !== workout.notes || effort !== (workout.effort || '')
+      || JSON.stringify(cardio) !== JSON.stringify(storedToCardio(workout))) {
       if (!confirm('Discard changes? Your edits will not be saved.')) return;
     }
     navigate(`/history/${workoutId}`);
@@ -107,6 +120,13 @@ export function EditWorkoutForm({ workoutId }: Props) {
           onInput={(e) => setDuration((e.target as HTMLInputElement).value)}
         />
       </div>
+
+      <CardioFields
+        workoutType={workout.type}
+        values={cardio}
+        onChange={patchCardio}
+        idPrefix="edit"
+      />
 
       <div class="form-group">
         <label class="form-label">Session Effort (optional)</label>

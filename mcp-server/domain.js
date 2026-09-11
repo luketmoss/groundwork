@@ -148,6 +148,22 @@ export function workoutRowValues(w) {
   ];
 }
 
+/**
+ * Unit conversions mirroring frontend/src/api/units.ts — the sheet stores
+ * canonical integer meters, everything user-facing is imperial. Change both
+ * together.
+ */
+export function metersToMiles(meters) {
+  const n = Number(meters);
+  return meters === '' || !Number.isFinite(n) ? null : Math.round((n / 1609.344) * 10) / 10;
+}
+
+export function metersToFeet(meters) {
+  const n = Number(meters);
+  if (meters === '' || !Number.isFinite(n)) return null;
+  return Math.round(n / 0.3048 / 10) * 10;
+}
+
 /** Seconds (as stored) -> whole minutes, or null when unset. Never 0. */
 export function secondsToMinutes(elapsedSeconds) {
   const seconds = parseInt(elapsedSeconds, 10);

@@ -6,6 +6,7 @@ import { navigate } from '../../router/router';
 import { ExerciseDetail, groupSetsIntoExercises } from './exercise-detail';
 import { ExerciseCompactCard } from '../shared/exercise-compact-card';
 import { formatDuration } from '../../api/duration';
+import { formatDistance, formatElevation, formatHeartRate } from '../../api/units';
 
 interface Props {
   workoutId: string;
@@ -168,6 +169,20 @@ export function WorkoutDetail({ workoutId }: Props) {
               the sets (AC4). */}
           {!isPlanned && workout.effort && (
             <span class={`effort-${workout.effort.toLowerCase()}`}>{workout.effort}</span>
+          )}
+          {/* #103: cardio attributes, imperial, each omitted entirely when
+              empty — no "0 mi", no em dash. */}
+          {!isPlanned && workout.distance_m && (
+            <span class="detail-distance">{formatDistance(workout.distance_m)}</span>
+          )}
+          {!isPlanned && workout.ascent_m && (
+            <span class="detail-ascent">↑ {formatElevation(workout.ascent_m)}</span>
+          )}
+          {!isPlanned && workout.descent_m && (
+            <span class="detail-descent">↓ {formatElevation(workout.descent_m)}</span>
+          )}
+          {!isPlanned && workout.avg_hr && (
+            <span class="detail-hr">{formatHeartRate(workout.avg_hr)}</span>
           )}
         </div>
         {workout.notes && (

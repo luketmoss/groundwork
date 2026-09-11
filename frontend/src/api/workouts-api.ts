@@ -89,7 +89,9 @@ export function workoutToRow(w: Workout): (string | number)[] {
 }
 
 export async function createWorkout(
-  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; elapsed_seconds?: string; effort?: Effort | ''; copied_from?: string; date?: string; status?: string },
+  data: { type: WorkoutType; name: string; template_id?: string; notes?: string; elapsed_seconds?: string; effort?: Effort | '';
+    distance_m?: string; ascent_m?: string; descent_m?: string; avg_hr?: string;
+    copied_from?: string; date?: string; status?: string },
   token: string,
 ): Promise<Workout> {
   const id = `w_${crypto.randomUUID().slice(0, 8)}`;
@@ -114,10 +116,10 @@ export async function createWorkout(
     // #103 (cardio); they ship empty and must never be defaulted.
     moving_seconds: '',
     effort: data.effort || '',
-    distance_m: '',
-    ascent_m: '',
-    descent_m: '',
-    avg_hr: '',
+    distance_m: data.distance_m || '',
+    ascent_m: data.ascent_m || '',
+    descent_m: data.descent_m || '',
+    avg_hr: data.avg_hr || '',
   };
 
   if (!isDemo()) {
