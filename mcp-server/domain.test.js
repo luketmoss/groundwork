@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 import {
   normalizeDate, normalizeRangeToMax, groupTemplateRows, todayStr,
-  slotKey, groupSetsByExercise, findSetSlots, secondsToMinutes,
+  slotKey, groupSetsByExercise, findSetSlots, secondsToMinutes, workoutRowValues,
 } from './domain.js';
 
 test('normalizeDate passes ISO dates through', () => {
@@ -140,4 +140,28 @@ test('secondsToMinutes returns null for an unset duration, not 0', () => {
 test('secondsToMinutes tells a genuine zero apart from an absent value', () => {
   assert.equal(secondsToMinutes('0'), 0);
   assert.equal(secondsToMinutes(''), null);
+});
+
+// --- #102: session effort is independent of set effort --------------
+
+test('a workout row carries session effort in column M', () => {
+  const w = {
+    id: 'w1', date: '2026-03-15', time: '07:00', type: 'weight', name: 'Push',
+    template_id: '', notes: '', elapsed_seconds: '3720', created: '', copied_from: '',
+    status: '', moving_seconds: '', effort: 'Hard', distance_m: '', ascent_m: '',
+    descent_m: '', avg_hr: '',
+  };
+  const row = workoutRowValues(w);
+  assert.equal(row.length, 17);
+  assert.equal(row[12], 'Hard', 'effort belongs in column M');
+});
+
+test('an unset session effort writes an empty cell, never a default', () => {
+  const w = {
+    id: 'w1', date: '2026-03-15', time: '07:00', type: 'weight', name: 'Push',
+    template_id: '', notes: '', elapsed_seconds: '', created: '', copied_from: '',
+    status: '', moving_seconds: '', effort: '', distance_m: '', ascent_m: '',
+    descent_m: '', avg_hr: '',
+  };
+  assert.equal(workoutRowValues(w)[12], '');
 });

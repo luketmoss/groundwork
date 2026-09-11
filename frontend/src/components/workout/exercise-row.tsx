@@ -36,6 +36,7 @@ interface Props {
 }
 
 import { sectionBadgeClass, sectionPillClass } from '../shared/section-utils';
+import { EffortToggle } from '../shared/effort-toggle';
 
 export function ExerciseRow({
   exercise,
@@ -300,19 +301,11 @@ export function ExerciseRow({
             onInput={(e) => onQuickFillReps((e.target as HTMLInputElement).value)}
           />
         </div>
-        <div class="effort-toggle">
-          {(['Easy', 'Medium', 'Hard'] as Effort[]).map((e) => (
-            <button
-              key={e}
-              class={`effort-btn effort-btn-${e.toLowerCase()}${exercise.quickFillEffort === e ? ' active' : ''}`}
-              onClick={() => onQuickFillEffort(exercise.quickFillEffort === e ? '' : e)}
-              aria-label={`Fill all sets: ${e}`}
-              aria-pressed={exercise.quickFillEffort === e ? 'true' : 'false'}
-            >
-              {e === 'Easy' ? 'E' : e === 'Medium' ? 'M' : 'H'}
-            </button>
-          ))}
-        </div>
+        <EffortToggle
+          value={exercise.quickFillEffort}
+          onChange={onQuickFillEffort}
+          label="Fill all sets"
+        />
         <span class="quick-fill-end-spacer" aria-hidden="true" />
       </div>
 

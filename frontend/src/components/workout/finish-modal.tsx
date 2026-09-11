@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'preact/hooks';
+import { EffortToggle } from '../shared/effort-toggle';
+import type { Effort } from '../../api/types';
 
 interface FinishWorkoutModalProps {
   notes: string;
   onNotesChange: (e: Event) => void;
+  effort: Effort | '';
+  onEffortChange: (effort: Effort | '') => void;
   onFinish: () => void;
   onCancel: () => void;
   finishing: boolean;
@@ -13,6 +17,8 @@ const HEADING_ID = 'finish-workout-heading';
 export function FinishWorkoutModal({
   notes,
   onNotesChange,
+  effort,
+  onEffortChange,
   onFinish,
   onCancel,
   finishing,
@@ -67,6 +73,16 @@ export function FinishWorkoutModal({
             rows={3}
             value={notes}
             onInput={onNotesChange}
+          />
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label">Session Effort (optional)</label>
+          <EffortToggle
+            value={effort}
+            onChange={onEffortChange}
+            size="session"
+            label="Session effort"
           />
         </div>
 

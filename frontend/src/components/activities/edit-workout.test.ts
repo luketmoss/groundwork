@@ -190,6 +190,7 @@ describe('Edit workout - duration editing', () => {
       name: 'Push Day',
       notes: 'Felt strong',
       elapsed_seconds: minutesToSeconds('45'),
+      effort: '',
     };
     expect(metadata.elapsed_seconds).toBe('2700');
     expect(secondsToMinutes(metadata.elapsed_seconds)).toBe(45);
@@ -201,6 +202,7 @@ describe('Edit workout - duration editing', () => {
       name: 'Push Day',
       notes: '',
       elapsed_seconds: minutesToSeconds(''),
+      effort: '',
     };
     expect(metadata.elapsed_seconds).toBe('');
     expect(secondsToMinutes(metadata.elapsed_seconds)).toBeNull();
@@ -210,5 +212,47 @@ describe('Edit workout - duration editing', () => {
     const w = workouts.value.find((w) => w.id === 'w_test2');
     expect(w?.elapsed_seconds).toBe('900');
     expect(secondsToMinutes(w!.elapsed_seconds)).toBe(15);
+  });
+});
+
+// Issue #102 — session effort on saved workouts.
+describe('Session effort (#102)', () => {
+  // AC3: effort is editable after the fact, including on workouts saved
+  // before the feature existed.
+  it('EditWorkoutData carries effort so both edit paths cover it', () => {
+    const metadata: import('../../state/actions').EditWorkoutData = {
+      date: '2026-03-10',
+      name: 'Push Day',
+      notes: '',
+      elapsed_seconds: '',
+      effort: 'Hard',
+    };
+    expect(metadata.effort).toBe('Hard');
+  });
+
+  it('allows effort to be cleared back to unset', () => {
+    const metadata: import('../../state/actions').EditWorkoutData = {
+      date: '2026-03-10',
+      name: 'Push Day',
+      notes: '',
+      elapsed_seconds: '',
+      effort: '',
+    };
+    expect(metadata.effort).toBe('');
+  });
+
+  // AC3: a workout saved before this shipped reads as unset, not as a default.
+  it('treats a workout with no stored effort as unset', () => {
+    const w = workouts.value.find((w) => w.id === 'w_test1');
+    expect(w?.effort).toBe('');
+  });
+
+  // AC4: session effort and set effort are independent.
+  it('does not derive session effort from the logged sets', () => {
+    const w = workouts.value.find((w) => w.id === 'w_test1');
+    const workoutSets = sets.value.filter((s) => s.workout_id === 'w_test1');
+    expect(workoutSets.length).toBeGreaterThan(0);
+    // Sets carry their own effort; the workout's stays unset until someone says.
+    expect(w?.effort).toBe('');
   });
 });

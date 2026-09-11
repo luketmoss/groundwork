@@ -156,6 +156,7 @@ tool(
       if (w.type === 'weight') parts.push(`— ${exercises} exercises, ${logged}/${mine.length} sets logged`);
       const mins = secondsToMinutes(w.elapsed_seconds);
       if (mins !== null) parts.push(`— ${mins} min`);
+      if (w.effort) parts.push(`— ${w.effort}`);
       if (w.notes) parts.push(`— "${w.notes}"`);
       parts.push(`(id: ${w.id})`);
       return parts.join(' ');
@@ -181,6 +182,7 @@ tool(
     ];
     const mins = secondsToMinutes(w.elapsed_seconds);
     if (mins !== null) out.push(`- Duration: ${mins} min`);
+    if (w.effort) out.push(`- Session effort: ${w.effort}`);
     if (w.template_id) out.push(`- From template: ${w.template_id}`);
     if (w.copied_from) out.push(`- Copied from: ${w.copied_from}`);
     if (w.notes) out.push(`- Notes: ${w.notes}`);
@@ -481,7 +483,7 @@ tool(
 
 tool(
   'thrive_update_workout',
-  'Fix a workout record: change its date, name, type, notes, duration, or flip it between planned and completed. ' +
+  'Fix a workout record: change its date, name, type, notes, duration, session effort, or flip it between planned and completed. ' +
     'Only pass the fields you want to change.',
   {
     workout_id: z.string().describe('Workout id'),
@@ -492,12 +494,19 @@ tool(
     elapsed_seconds: z.string().optional().describe(
       'New elapsed time, in SECONDS (the unit the sheet stores). 45 minutes is "2700".',
     ),
+    effort: z
+      .enum([...EFFORTS, ''])
+      .optional()
+      .describe(
+        'Session-level effort. Pass "" to clear it back to unset. Omit to leave it alone. ' +
+        'Independent of per-set effort, and never inferred from it.',
+      ),
     status: z
       .enum(['planned', 'completed'])
       .optional()
       .describe("'planned' marks it upcoming; 'completed' marks it done"),
   },
-  async ({ workout_id, date, name, type, notes, elapsed_seconds, status }) => {
+  async ({ workout_id, date, name, type, notes, elapsed_seconds, effort, status }) => {
     const workouts = await fetchWorkouts();
     const w = resolveWorkout(workout_id, workouts);
 
@@ -515,6 +524,10 @@ tool(
     if (elapsed_seconds !== undefined) {
       changes.push(`duration -> ${secondsToMinutes(elapsed_seconds) ?? '(unset)'} min`);
       updated.elapsed_seconds = elapsed_seconds;
+    }
+    if (effort !== undefined) {
+      changes.push(`effort ${w.effort || '(unset)'} -> ${effort || '(unset)'}`);
+      updated.effort = effort;
     }
     if (status !== undefined) {
       const s = status === 'planned' ? 'planned' : '';

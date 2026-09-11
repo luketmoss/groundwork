@@ -22,6 +22,8 @@ describe('FinishWorkoutModal', () => {
     const props = {
       notes: '',
       onNotesChange,
+      effort: '',
+      onEffortChange: vi.fn(),
       onFinish,
       onCancel,
       finishing: false,
@@ -195,5 +197,67 @@ describe('FinishWorkoutModal', () => {
       fireEvent.input(textarea, { target: { value: 'New notes' } });
       expect(onNotesChange).toHaveBeenCalled();
     });
+  });
+});
+
+// Issue #102 — session effort in the finish modal.
+describe('FinishWorkoutModal — session effort (#102)', () => {
+  let onEffortChange: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => { onEffortChange = vi.fn(); });
+  afterEach(cleanup);
+
+  function renderWithEffort(overrides: Record<string, unknown> = {}) {
+    return render(h(FinishWorkoutModal as any, {
+      notes: '', onNotesChange: vi.fn(), effort: '', onEffortChange,
+      onFinish: vi.fn(), onCancel: vi.fn(), finishing: false, ...overrides,
+    }));
+  }
+
+  // AC1: nothing pre-selected, and saving untouched leaves it empty.
+  it('offers the control with nothing pre-selected', () => {
+    const { container } = renderWithEffort();
+    const group = container.querySelector('[aria-label="Session effort"]')!;
+    expect(group).toBeTruthy();
+    expect(group.querySelector('.active')).toBeNull();
+  });
+
+  // AC1: the control must sit BELOW the notes textarea so the existing
+  // auto-focus still lands on the first field and Tab order follows reading
+  // order.
+  it('places the effort control after the notes textarea in DOM order', () => {
+    const { container } = renderWithEffort();
+    const textarea = container.querySelector('textarea')!;
+    const group = container.querySelector('[aria-label="Session effort"]')!;
+    expect(textarea.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('still auto-focuses the notes textarea, not an effort button', () => {
+    const { container } = renderWithEffort();
+    expect(document.activeElement).toBe(container.querySelector('textarea'));
+  });
+
+  it('reports the chosen effort upward', () => {
+    const { container } = renderWithEffort();
+    const hard = [...container.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Hard')!;
+    fireEvent.click(hard);
+    expect(onEffortChange).toHaveBeenCalledWith('Hard');
+  });
+
+  // AC2: unset stays reachable from inside the modal.
+  it('clears back to unset when the selected value is tapped again', () => {
+    const { container } = renderWithEffort({ effort: 'Hard' });
+    const hard = [...container.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Hard')!;
+    fireEvent.click(hard);
+    expect(onEffortChange).toHaveBeenCalledWith('');
+  });
+
+  it('does not block saving when effort is unset', () => {
+    const onFinish = vi.fn();
+    const { container } = renderWithEffort({ onFinish });
+    const save = [...container.querySelectorAll('button')].find((b) => /Save & Finish/.test(b.textContent!))!;
+    expect(save.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(save);
+    expect(onFinish).toHaveBeenCalled();
   });
 });
