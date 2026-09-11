@@ -45,7 +45,6 @@ const SETS: SetWithRow[] = [
     weight: '185',
     reps: '8',
     effort: 'Medium',
-    notes: '',
     sheetRow: 10,
   },
   {
@@ -59,7 +58,6 @@ const SETS: SetWithRow[] = [
     weight: '185',
     reps: '7',
     effort: 'Hard',
-    notes: '',
     sheetRow: 11,
   },
   {
@@ -73,7 +71,6 @@ const SETS: SetWithRow[] = [
     weight: '60',
     reps: '10',
     effort: 'Easy',
-    notes: '',
     sheetRow: 12,
   },
 ];

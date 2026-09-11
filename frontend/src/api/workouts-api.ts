@@ -164,7 +164,7 @@ export async function fetchSets(token: string): Promise<SetWithRow[]> {
   if (isDemo()) return [...DEMO_SETS];
 
   return withReauth(token, async (t) => {
-    const rows = await sheetsGet('Sets!A2:K', t);
+    const rows = await sheetsGet('Sets!A2:J', t);
     return rows.map((row, i) => ({
       workout_id: row[0] || '',
       exercise_id: row[1] || '',
@@ -176,13 +176,17 @@ export async function fetchSets(token: string): Promise<SetWithRow[]> {
       weight: row[7] || '',
       reps: row[8] || '',
       effort: (row[9] || '') as SetWithRow['effort'],
-      notes: row[10] || '',
       sheetRow: i + 2,
     }));
   });
 }
 
-function setToRow(s: WorkoutSet): (string | number)[] {
+/**
+ * Builds a `Sets!A:J` row. Reads named fields, so a payload carrying extra
+ * properties — an offline-queue entry serialized under the old shape, say —
+ * contributes no stray trailing cell.
+ */
+export function setToRow(s: WorkoutSet): (string | number)[] {
   return [
     s.workout_id,
     s.exercise_id,
@@ -194,7 +198,6 @@ function setToRow(s: WorkoutSet): (string | number)[] {
     s.weight,
     s.reps,
     s.effort,
-    s.notes,
   ];
 }
 
@@ -202,7 +205,7 @@ export async function appendSet(set: WorkoutSet, token: string): Promise<void> {
   if (isDemo()) return;
 
   await withReauth(token, (t) =>
-    sheetsAppend('Sets!A:K', [setToRow(set)], t),
+    sheetsAppend('Sets!A:J', [setToRow(set)], t),
   );
 }
 
@@ -211,7 +214,7 @@ export async function appendSets(sets: WorkoutSet[], token: string): Promise<voi
   if (sets.length === 0) return;
 
   await withReauth(token, (t) =>
-    sheetsAppend('Sets!A:K', sets.map(setToRow), t),
+    sheetsAppend('Sets!A:J', sets.map(setToRow), t),
   );
 }
 
@@ -223,7 +226,7 @@ export async function updateSet(
   if (isDemo()) return;
 
   await withReauth(token, (t) =>
-    sheetsUpdate(`Sets!A${sheetRow}:K${sheetRow}`, [setToRow(set)], t),
+    sheetsUpdate(`Sets!A${sheetRow}:J${sheetRow}`, [setToRow(set)], t),
   );
 }
 

@@ -15,7 +15,6 @@ function makeSetRow(overrides: Partial<SetWithRow> = {}): SetWithRow {
     weight: '',
     reps: '',
     effort: '',
-    notes: '',
     sheetRow: 2,
     ...overrides,
   };
@@ -68,7 +67,7 @@ describe('mergeWarmups', () => {
         exercise_name: 'Arm Circles',
         section: 'warmup',
         exercise_order: 1,
-        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', notes: '', saved: true, sheetRow: 2 }],
+        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', saved: true, sheetRow: 2 }],
       }),
       makeExercise({ exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 2 }),
     ];
@@ -119,14 +118,14 @@ describe('mergeWarmups', () => {
         exercise_name: 'Arm Circles',
         section: 'warmup',
         exercise_order: 1,
-        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', notes: '', saved: true, sheetRow: 5 }],
+        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', saved: true, sheetRow: 5 }],
       }),
       makeExercise({
         exercise_id: 'w2',
         exercise_name: 'Leg Swings',
         section: 'warmup',
         exercise_order: 2,
-        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', notes: '', saved: true, sheetRow: 6 }],
+        sets: [{ set_number: 1, planned_reps: '', weight: '', reps: '', effort: '', saved: true, sheetRow: 6 }],
       }),
       makeExercise({ exercise_id: 'ex1', section: 'primary', exercise_order: 3 }),
     ];

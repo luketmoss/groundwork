@@ -11,7 +11,6 @@ function makeSet(overrides: Partial<TrackerSet> = {}): TrackerSet {
     weight: '',
     reps: '',
     effort: '',
-    notes: '',
     saved: false,
     sheetRow: -1,
     ...overrides,
@@ -44,7 +43,6 @@ function makeLastTimeSet(overrides: Partial<SetWithRow> = {}): SetWithRow {
     weight: '135',
     reps: '10',
     effort: 'Medium',
-    notes: '',
     sheetRow: 100,
     ...overrides,
   };
@@ -218,20 +216,5 @@ describe('applyCopyDown', () => {
     // ex2 untouched
     expect(result[1].sets[0].weight).toBe('');
     expect(result[1].sets).toHaveLength(3);
-  });
-
-  // AC1: notes not copied from last-time
-  it('does not copy notes from last-time sets', () => {
-    const exercises = [makeExercise({
-      sets: [makeSet({ set_number: 1, notes: 'my note' })],
-    })];
-
-    const lastTime = [
-      makeLastTimeSet({ set_number: 1, notes: 'old note from last time' }),
-    ];
-
-    const { exercises: result } = applyCopyDown(exercises, 'ex1', 1, lastTime);
-
-    expect(result[0].sets[0].notes).toBe('');
   });
 });

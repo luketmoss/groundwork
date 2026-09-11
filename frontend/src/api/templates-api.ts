@@ -25,7 +25,7 @@ export async function fetchTemplateRows(token: string): Promise<TemplateRowWithR
   if (isDemo()) return [...DEMO_TEMPLATE_ROWS];
 
   return withReauth(token, async (t) => {
-    const rows = await sheetsGet('Templates!A2:J', t);
+    const rows = await sheetsGet('Templates!A2:H', t);
     return rows.map((row, i) => ({
       template_id: row[0] || '',
       template_name: row[1] || '',
@@ -35,8 +35,6 @@ export async function fetchTemplateRows(token: string): Promise<TemplateRowWithR
       section: (row[5] || '') as Section | string,
       sets: normalizeRangeToMax(row[6] || ''),
       reps: normalizeRangeToMax(row[7] || ''),
-      created: row[8] || '',
-      updated: row[9] || '',
       sheetRow: i + 2,
     }));
   });
@@ -75,8 +73,6 @@ export async function createTemplate(
     section: ex.section,
     sets: ex.sets,
     reps: ex.reps,
-    created: now,
-    updated: now,
     sheetRow: -1, // placeholder; corrected on re-fetch
   }));
 
@@ -90,10 +86,8 @@ export async function createTemplate(
       r.section,
       r.sets,
       r.reps,
-      r.created,
-      r.updated,
     ]);
-    await withReauth(token, (t) => sheetsAppend('Templates!A:J', sheetValues, t));
+    await withReauth(token, (t) => sheetsAppend('Templates!A:H', sheetValues, t));
   }
 
   return { id: templateId, name, exercises: templateRows };
@@ -134,7 +128,7 @@ export async function updateTemplate(
       now,
     ]);
     if (sheetValues.length > 0) {
-      await sheetsAppend('Templates!A:J', sheetValues, t);
+      await sheetsAppend('Templates!A:H', sheetValues, t);
     }
   });
 }

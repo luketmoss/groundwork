@@ -432,7 +432,6 @@ async function prepopulateSetsFromTemplate(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
       });
       continue;
     }
@@ -450,7 +449,6 @@ async function prepopulateSetsFromTemplate(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
       });
     }
   }
@@ -507,7 +505,6 @@ async function prepopulateSetsFromBuilder(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
       });
       return;
     }
@@ -523,7 +520,6 @@ async function prepopulateSetsFromBuilder(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
       });
     }
   });
@@ -809,7 +805,6 @@ export async function copyWorkout(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
       }));
 
       await appendSetsApi(newSets, token);
@@ -907,7 +902,6 @@ export interface EditSetData {
   weight: string;
   reps: string;
   effort: string;
-  notes: string;
   sheetRow: number;
 }
 
@@ -964,7 +958,6 @@ export async function saveWorkoutEdits(
         weight: s.weight,
         reps: s.reps,
         effort: s.effort as SetWithRow['effort'],
-        notes: s.notes,
       }));
       await appendSetsApi(toAppend, token);
     }
@@ -983,7 +976,6 @@ export async function saveWorkoutEdits(
         weight: s.weight,
         reps: s.reps,
         effort: s.effort as SetWithRow['effort'],
-        notes: s.notes,
       }, token);
     }
 
@@ -1005,7 +997,6 @@ export async function saveWorkoutEdits(
         weight: s.weight,
         reps: s.reps,
         effort: s.effort as SetWithRow['effort'],
-        notes: s.notes,
         sheetRow: s.sheetRow > 0 ? s.sheetRow : 1000 + i,
       }));
       sets.value = [...nonWorkoutSets, ...updatedSets];

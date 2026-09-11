@@ -106,7 +106,6 @@ function setLine(s) {
   if (s.weight) bits.push(`${s.weight} lbs`);
   bits.push(`${s.reps || s.planned_reps || '?'} reps`);
   if (s.effort) bits.push(s.effort);
-  if (s.notes) bits.push(`"${s.notes}"`);
   return `set ${s.set_number}: ${bits.join(' x ')}`;
 }
 
@@ -392,7 +391,6 @@ tool(
           weight: '',
           reps: '',
           effort: '',
-          notes: '',
         });
       }
     });
@@ -545,7 +543,6 @@ tool(
     reps: z.string().optional().describe('Reps actually performed'),
     planned_reps: z.string().optional().describe('Planned reps'),
     effort: z.enum(EFFORTS).optional().describe('Effort level'),
-    notes: z.string().optional().describe('Set notes (replaces existing)'),
   },
   async ({
     workout_id, exercise, set_number, section, exercise_order,

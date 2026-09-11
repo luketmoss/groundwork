@@ -98,7 +98,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
           weight: set.weight,
           reps: set.reps,
           effort: set.effort,
-          notes: set.notes,
         }, token);
 
         // Mark as saved
@@ -239,7 +238,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             weight: s.weight,
             reps: s.reps,
             effort: s.effort,
-            notes: s.notes,
             sheetRow: s.sheetRow,
           }, token);
         } catch {
@@ -276,7 +274,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
           weight: ex.quickFillWeight || '',
           reps: '',
           effort: '',
-          notes: '',
           saved: false,
           sheetRow: -1,
         };
@@ -308,7 +305,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             weight: set.weight,
             reps: set.reps,
             effort: set.effort,
-            notes: set.notes,
             sheetRow: set.sheetRow,
           }, token);
         } catch {
@@ -350,7 +346,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             weight: s.weight,
             reps: s.reps,
             effort: s.effort,
-            notes: s.notes,
             sheetRow: s.sheetRow,
           }, token);
         } catch {
@@ -427,7 +422,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             weight: s.weight,
             reps: s.reps,
             effort: s.effort,
-            notes: s.notes,
             sheetRow: s.sheetRow,
           }, token);
         } catch {
@@ -454,7 +448,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
         saved: false,
         sheetRow: -1,
       }],
@@ -497,7 +490,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
             weight: set.weight,
             reps: set.reps,
             effort: set.effort,
-            notes: set.notes,
             sheetRow: set.sheetRow,
           });
         }
@@ -539,7 +531,6 @@ export function WorkoutTracker({ workoutId, workoutName }: Props) {
               weight: set.weight,
               reps: set.reps,
               effort: set.effort,
-              notes: set.notes,
             }, token);
           }
         }

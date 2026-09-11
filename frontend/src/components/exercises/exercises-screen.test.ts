@@ -222,9 +222,9 @@ describe('Issue #87 — Exercises FAB', () => {
 // === Issue #23: Show last workout date and details on exercise cards ===
 
 const mockSets: SetWithRow[] = [
-  { workout_id: 'w1', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '8-10', weight: '185', reps: '8', effort: 'Medium', notes: '', sheetRow: 2 },
-  { workout_id: 'w1', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '8-10', weight: '185', reps: '7', effort: 'Hard', notes: '', sheetRow: 3 },
-  { workout_id: 'w1', exercise_id: 'ex2', exercise_name: 'Row BB', section: 'primary', exercise_order: 2, set_number: 1, planned_reps: '8-10', weight: '135', reps: '10', effort: 'Easy', notes: '', sheetRow: 4 },
+  { workout_id: 'w1', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '8-10', weight: '185', reps: '8', effort: 'Medium', sheetRow: 2 },
+  { workout_id: 'w1', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '8-10', weight: '185', reps: '7', effort: 'Hard', sheetRow: 3 },
+  { workout_id: 'w1', exercise_id: 'ex2', exercise_name: 'Row BB', section: 'primary', exercise_order: 2, set_number: 1, planned_reps: '8-10', weight: '135', reps: '10', effort: 'Easy', sheetRow: 4 },
 ];
 
 const mockWorkouts: WorkoutWithRow[] = [
@@ -252,8 +252,8 @@ describe('Issue #23 — Exercise card last-workout info', () => {
 
     it('buildLastPerformedMap picks the most recent workout date per exercise', () => {
       const setsMulti: SetWithRow[] = [
-        { workout_id: 'w_old', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '', weight: '135', reps: '10', effort: '', notes: '', sheetRow: 2 },
-        { workout_id: 'w_new', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '', weight: '185', reps: '8', effort: '', notes: '', sheetRow: 3 },
+        { workout_id: 'w_old', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '', weight: '135', reps: '10', effort: '', sheetRow: 2 },
+        { workout_id: 'w_new', exercise_id: 'ex1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '', weight: '185', reps: '8', effort: '', sheetRow: 3 },
       ];
       const wkts: WorkoutWithRow[] = [
         { id: 'w_old', date: '2026-01-01', time: '', type: 'weight', name: '', template_id: '', notes: '', duration_min: '', created: '', copied_from: '', status: '', sheetRow: 2 },

@@ -39,7 +39,6 @@ const makeSet = (overrides?: Partial<WorkoutSet & { sheetRow: number }>): Workou
   weight: '100',
   reps: '8',
   effort: 'Medium',
-  notes: '',
   sheetRow: -1,
   ...overrides,
 });

@@ -33,7 +33,6 @@ export function buildExerciseList(setRows: SetWithRow[]): TrackerExercise[] {
       weight: s.weight,
       reps: s.reps,
       effort: s.effort as Effort | '',
-      notes: s.notes,
       saved: s.sheetRow > 0,
       sheetRow: s.sheetRow,
     });

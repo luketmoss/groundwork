@@ -8,9 +8,9 @@ import { sheetsGet, sheetsAppend, sheetsUpdate, deleteRows } from './sheets.js';
 
 const RANGES = {
   exercises: 'Exercises!A2:E',
-  templates: 'Templates!A2:J',
+  templates: 'Templates!A2:H',
   workouts: 'Workouts!A2:K',
-  sets: 'Sets!A2:K',
+  sets: 'Sets!A2:J',
 };
 
 export const WORKOUT_TYPES = ['weight', 'stretch', 'bike', 'hike'];
@@ -95,8 +95,6 @@ export async function fetchTemplateRows() {
     section: row[5] || '',
     sets: normalizeRangeToMax(row[6] || ''),
     reps: normalizeRangeToMax(row[7] || ''),
-    created: row[8] || '',
-    updated: row[9] || '',
     sheetRow: i + 2,
   }));
 }
@@ -113,20 +111,19 @@ export function groupTemplateRows(rows) {
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function templateRowValues(templateId, name, ex, order, created, updated) {
+function templateRowValues(templateId, name, ex, order) {
   return [
     templateId, name, order,
     ex.exercise_id, ex.exercise_name, ex.section,
-    String(ex.sets), String(ex.reps), created, updated,
+    String(ex.sets), String(ex.reps),
   ];
 }
 
 export async function createTemplate(name, exercises) {
   const templateId = newId('tpl');
-  const now = nowIso();
   await sheetsAppend(
-    'Templates!A:J',
-    exercises.map((ex, i) => templateRowValues(templateId, name, ex, i + 1, now, now)),
+    'Templates!A:H',
+    exercises.map((ex, i) => templateRowValues(templateId, name, ex, i + 1)),
   );
   return { id: templateId, name, exercises };
 }
@@ -134,12 +131,10 @@ export async function createTemplate(name, exercises) {
 /** Replace a template's rows wholesale (delete + append), as the app does. */
 export async function replaceTemplateRows(templateId, name, exercises, existingRows) {
   const mine = existingRows.filter((r) => r.template_id === templateId);
-  const created = mine[0]?.created || nowIso();
-  const now = nowIso();
   await deleteRows('Templates', mine.map((r) => r.sheetRow));
   await sheetsAppend(
-    'Templates!A:J',
-    exercises.map((ex, i) => templateRowValues(templateId, name, ex, i + 1, created, now)),
+    'Templates!A:H',
+    exercises.map((ex, i) => templateRowValues(templateId, name, ex, i + 1)),
   );
 }
 
@@ -212,7 +207,7 @@ function setRowValues(s) {
   return [
     s.workout_id, s.exercise_id, s.exercise_name, s.section,
     s.exercise_order, s.set_number, s.planned_reps,
-    s.weight, s.reps, s.effort, s.notes,
+    s.weight, s.reps, s.effort,
   ];
 }
 
@@ -229,7 +224,6 @@ export async function fetchSets() {
     weight: row[7] || '',
     reps: row[8] || '',
     effort: row[9] || '',
-    notes: row[10] || '',
     sheetRow: i + 2,
   }));
 }
@@ -282,11 +276,11 @@ export function findSetSlots(sets, { workout_id, exercise_id, section, exercise_
 }
 
 export async function appendSets(sets) {
-  await sheetsAppend('Sets!A:K', sets.map(setRowValues));
+  await sheetsAppend('Sets!A:J', sets.map(setRowValues));
 }
 
 export async function writeSetRow(set) {
-  await sheetsUpdate(`Sets!A${set.sheetRow}:K${set.sheetRow}`, [setRowValues(set)]);
+  await sheetsUpdate(`Sets!A${set.sheetRow}:J${set.sheetRow}`, [setRowValues(set)]);
 }
 
 export { deleteRows };

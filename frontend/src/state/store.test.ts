@@ -83,7 +83,6 @@ function makeSetRow(overrides: Partial<SetWithRow> = {}): SetWithRow {
     weight: '135',
     reps: '8',
     effort: 'Medium',
-    notes: '',
     sheetRow: 2,
     ...overrides,
   };
