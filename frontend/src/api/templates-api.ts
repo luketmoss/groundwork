@@ -56,13 +56,31 @@ export function groupTemplateRows(rows: TemplateRowWithRow[]): Template[] {
   return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * Builds a `Templates!A:H` row. Both the create and the edit path go through
+ * here: `sheetsAppend` uses its range only to locate the table and then writes
+ * every value it is given, so a builder that emitted more cells than the range
+ * spans would silently recreate the columns removed in #100.
+ */
+export function templateRowValues(r: Omit<TemplateRowWithRow, 'sheetRow'>): (string | number)[] {
+  return [
+    r.template_id,
+    r.template_name,
+    r.order,
+    r.exercise_id,
+    r.exercise_name,
+    r.section,
+    r.sets,
+    r.reps,
+  ];
+}
+
 export async function createTemplate(
   name: string,
   exercises: TemplateExerciseInput[],
   token: string,
 ): Promise<Template> {
   const templateId = `tpl_${crypto.randomUUID().slice(0, 8)}`;
-  const now = new Date().toISOString();
 
   const templateRows: TemplateRowWithRow[] = exercises.map((ex, i) => ({
     template_id: templateId,
@@ -77,16 +95,7 @@ export async function createTemplate(
   }));
 
   if (!isDemo()) {
-    const sheetValues = templateRows.map((r) => [
-      r.template_id,
-      r.template_name,
-      r.order,
-      r.exercise_id,
-      r.exercise_name,
-      r.section,
-      r.sets,
-      r.reps,
-    ]);
+    const sheetValues = templateRows.map(templateRowValues);
     await withReauth(token, (t) => sheetsAppend('Templates!A:H', sheetValues, t));
   }
 
@@ -114,19 +123,18 @@ export async function updateTemplate(
     }
 
     // Append new rows
-    const now = new Date().toISOString();
-    const sheetValues = exercises.map((ex, i) => [
-      templateId,
-      name,
-      i + 1,
-      ex.exercise_id,
-      ex.exercise_name,
-      ex.section,
-      ex.sets,
-      ex.reps,
-      now,
-      now,
-    ]);
+    const sheetValues = exercises.map((ex, i) =>
+      templateRowValues({
+        template_id: templateId,
+        template_name: name,
+        order: i + 1,
+        exercise_id: ex.exercise_id,
+        exercise_name: ex.exercise_name,
+        section: ex.section,
+        sets: ex.sets,
+        reps: ex.reps,
+      }),
+    );
     if (sheetValues.length > 0) {
       await sheetsAppend('Templates!A:H', sheetValues, t);
     }

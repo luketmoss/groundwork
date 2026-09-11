@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { setToRow } from './workouts-api';
+import { templateRowValues } from './templates-api';
 import type { WorkoutSet } from './types';
 
 function makeSet(overrides: Partial<WorkoutSet> = {}): WorkoutSet {
@@ -40,5 +41,31 @@ describe('setToRow', () => {
   it('ignores a stale notes property left on an offline-queue payload', () => {
     const stale = { ...makeSet(), notes: 'written by a previous version' } as WorkoutSet;
     expect(setToRow(stale)).toEqual(setToRow(makeSet()));
+  });
+});
+
+// Issue #100 — the Templates tab is A:H; columns I/J were removed as dead.
+// sheetsAppend writes every value it is handed regardless of the range it is
+// given, so a row wider than eight cells would rewrite the deleted columns.
+describe('templateRowValues', () => {
+  const row = {
+    template_id: 'tpl_001',
+    template_name: 'Upper Push A',
+    order: 1,
+    exercise_id: 'ex1',
+    exercise_name: 'Bench Press',
+    section: 'primary',
+    sets: '5',
+    reps: '6',
+  };
+
+  it('emits exactly eight cells, spanning A:H', () => {
+    expect(templateRowValues(row)).toHaveLength(8);
+  });
+
+  it('emits the columns in sheet order', () => {
+    expect(templateRowValues(row)).toEqual([
+      'tpl_001', 'Upper Push A', 1, 'ex1', 'Bench Press', 'primary', '5', '6',
+    ]);
   });
 });
