@@ -17,6 +17,7 @@ import {
   getWeekCardioAscent,
   getWeeklyTargetProgress,
   coverageSuffix,
+  cardioNoun,
   toLocalDateStr,
   formatPlannedDate,
   isOverdue,
@@ -66,7 +67,9 @@ export function ActivitiesScreen() {
   const monthMinutes = getMonthTotalMinutes(completed, todayStr);
 
   // #105 — this week only; last week and this month keep their existing cells.
-  const cardioCount = getWeekCardioWorkouts(completed, todayStr).length;
+  const weekCardio = getWeekCardioWorkouts(completed, todayStr);
+  const cardioCount = weekCardio.length;
+  const cardioUnit = cardioNoun(weekCardio);
   const weekDistance = getWeekCardioDistance(completed, todayStr);
   const weekAscent = getWeekCardioAscent(completed, todayStr);
   const targets = getWeeklyTargetProgress(completed, todayStr);
@@ -79,10 +82,10 @@ export function ActivitiesScreen() {
     `${pluralWorkout(lastWeekCount)} last week, ${lastWeekMinutes} minutes.`,
     `${pluralWorkout(monthCount)} this month, ${monthMinutes} minutes.`,
     cardioCount > 0 && weekDistance.total > 0
-      ? `${metersToMiles(String(weekDistance.total))} miles across ${weekDistance.withData} of ${weekDistance.of} rides.`
+      ? `${metersToMiles(String(weekDistance.total))} miles across ${weekDistance.withData} of ${weekDistance.of} ${cardioUnit}.`
       : '',
     cardioCount > 0 && weekAscent.total > 0
-      ? `${metersToFeet(String(weekAscent.total))?.toLocaleString('en-US')} feet of ascent across ${weekAscent.withData} of ${weekAscent.of} rides.`
+      ? `${metersToFeet(String(weekAscent.total))?.toLocaleString('en-US')} feet of ascent across ${weekAscent.withData} of ${weekAscent.of} ${cardioUnit}.`
       : '',
     `This week's target: ${targets.map((t) => `${t.done} of ${t.target} ${t.label}`).join(', ')}.`,
   ].filter(Boolean).join(' ');
@@ -146,10 +149,10 @@ export function ActivitiesScreen() {
             <span class="stats-bar-label">Cardio this week</span>
             <span class="stats-row-value">
               {weekDistance.total > 0 && (
-                <span>{formatDistance(String(weekDistance.total))}{coverageSuffix(weekDistance)}</span>
+                <span>{formatDistance(String(weekDistance.total))}{coverageSuffix(weekDistance, cardioUnit)}</span>
               )}
               {weekAscent.total > 0 && (
-                <span>↑ {formatElevation(String(weekAscent.total))}{coverageSuffix(weekAscent)}</span>
+                <span>↑ {formatElevation(String(weekAscent.total))}{coverageSuffix(weekAscent, cardioUnit)}</span>
               )}
             </span>
           </div>

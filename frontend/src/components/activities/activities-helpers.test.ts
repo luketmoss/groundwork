@@ -12,6 +12,7 @@ import {
   getWeekCardioAscent,
   getWeeklyTargetProgress,
   coverageSuffix,
+  cardioNoun,
   getWorkoutTags,
   EQUIPMENT_TAGS,
   toLocalDateStr,
@@ -811,5 +812,23 @@ describe('coverageSuffix (#105)', () => {
 
   it('renders nothing for an empty period', () => {
     expect(coverageSuffix({ total: 0, withData: 0, of: 0 })).toBe('');
+  });
+});
+
+describe('cardioNoun (#105)', () => {
+  const bike = (id: string) => makeWorkout({ id, type: 'bike' });
+  const hike = (id: string) => makeWorkout({ id, type: 'hike' });
+
+  // AC2: coverage must name what is actually being counted.
+  it('says rides when the week is all rides', () => {
+    expect(cardioNoun([bike('w1'), bike('w2')])).toBe('rides');
+  });
+
+  it('says hikes when the week is all hikes, not rides', () => {
+    expect(cardioNoun([hike('w1'), hike('w2')])).toBe('hikes');
+  });
+
+  it('falls back to a neutral noun for a mixed week', () => {
+    expect(cardioNoun([bike('w1'), hike('w2')])).toBe('activities');
   });
 });

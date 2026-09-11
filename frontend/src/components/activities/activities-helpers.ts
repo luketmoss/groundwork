@@ -351,6 +351,16 @@ export interface CoveredTotal {
 }
 
 /**
+ * Names the activities being counted, so "2/3 rides" is accurate rather than
+ * merely conventional — a week of hikes must not report rides.
+ */
+export function cardioNoun(cardio: WorkoutWithRow[]): string {
+  const types = new Set(cardio.map((w) => w.type));
+  if (types.size === 1) return types.has('bike') ? 'rides' : 'hikes';
+  return 'activities';
+}
+
+/**
  * Renders coverage as a suffix naming *what* is counted — " · 4/5 rides",
  * never "(4 of 5)", which reads as four of five *miles*.
  *
