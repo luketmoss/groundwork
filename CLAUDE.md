@@ -32,10 +32,13 @@ Personal workout tracker: Preact SPA → Google Sheets REST API.
 ## Data Model
 Google Sheet "Groundwork" with 5 tabs:
 - **Exercises** (A:E): id, Name, Tags, Notes, Created
-- **Templates** (A:L): template_id, Template Name, Order, exercise_id, Exercise Name, Section, Sets, Reps, Rest (s), Group Rest (s), Created, Updated
-- **Workouts** (A:J): id, Date, Time, Type, Name, template_id, Notes, Duration (min), Created, copied_from
-- **Sets** (A:K): workout_id, exercise_id, Exercise Name, Section, Exercise Order, Set #, Planned Reps, Weight (lbs), Reps, Effort, Notes
-- **Config** (A:B): Key, Value
+- **Templates** (A:H): template_id, Template Name, Order, exercise_id, Exercise Name, Section, Sets, Reps
+- **Workouts** (A:K): id, Date, Time, Type, Name, template_id, Notes, Duration (min), Created, copied_from, status
+- **Sets** (A:J): workout_id, exercise_id, Exercise Name, Section, Exercise Order, Set #, Planned Reps, Weight (lbs), Reps, Effort
+- **Labels** (A:D): id, name, color_key, created
+
+`Created` on `Exercises`/`Workouts`/`Labels` is written but never read — a
+deliberate forensic trail, not dead weight to be removed.
 
 ### Workout Types
 - `weight` — structured weight training with exercises, sets, reps, effort

@@ -129,7 +129,7 @@ function setsFromSheet(): SetWithRow[] {
   return sheet.Sets.map((row, i) => ({
     workout_id: row[0], exercise_id: row[1], exercise_name: row[2], section: row[3],
     exercise_order: Number(row[4]), set_number: Number(row[5]), planned_reps: row[6],
-    weight: row[7], reps: row[8], effort: row[9] as any, notes: row[10], sheetRow: i + 2,
+    weight: row[7], reps: row[8], effort: row[9] as any, sheetRow: i + 2,
   }));
 }
 

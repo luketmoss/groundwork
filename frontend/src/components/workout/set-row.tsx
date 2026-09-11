@@ -6,7 +6,6 @@ export interface TrackerSet {
   weight: string;
   reps: string;
   effort: Effort | '';
-  notes: string;
   saved: boolean;
   sheetRow: number;
 }

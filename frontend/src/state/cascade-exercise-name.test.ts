@@ -66,25 +66,25 @@ const mockTemplates: Template[] = [
     id: 'tpl_1',
     name: 'Push Day',
     exercises: [
-      { template_id: 'tpl_1', template_name: 'Push Day', order: 1, exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', sets: '4', reps: '6', created: '', updated: '', sheetRow: 2 },
-      { template_id: 'tpl_1', template_name: 'Push Day', order: 2, exercise_id: 'ex_2', exercise_name: 'Squat', section: 'primary', sets: '3', reps: '8', created: '', updated: '', sheetRow: 3 },
+      { template_id: 'tpl_1', template_name: 'Push Day', order: 1, exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', sets: '4', reps: '6', sheetRow: 2 },
+      { template_id: 'tpl_1', template_name: 'Push Day', order: 2, exercise_id: 'ex_2', exercise_name: 'Squat', section: 'primary', sets: '3', reps: '8', sheetRow: 3 },
     ],
   },
   {
     id: 'tpl_2',
     name: 'Full Body',
     exercises: [
-      { template_id: 'tpl_2', template_name: 'Full Body', order: 1, exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'SS1', sets: '3', reps: '10', created: '', updated: '', sheetRow: 4 },
+      { template_id: 'tpl_2', template_name: 'Full Body', order: 1, exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'SS1', sets: '3', reps: '10', sheetRow: 4 },
     ],
   },
 ];
 
 const mockSets: SetWithRow[] = [
-  { workout_id: 'w_1', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '6', weight: '185', reps: '6', effort: 'Medium', notes: '', sheetRow: 2 },
-  { workout_id: 'w_1', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '6', weight: '185', reps: '5', effort: 'Hard', notes: '', sheetRow: 3 },
-  { workout_id: 'w_2', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '6', weight: '175', reps: '6', effort: 'Medium', notes: '', sheetRow: 4 },
-  { workout_id: 'w_1', exercise_id: 'ex_2', exercise_name: 'Squat', section: 'primary', exercise_order: 2, set_number: 1, planned_reps: '8', weight: '225', reps: '8', effort: 'Medium', notes: '', sheetRow: 5 },
-  { workout_id: 'w_2', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '6', weight: '175', reps: '5', effort: 'Hard', notes: '', sheetRow: 6 },
+  { workout_id: 'w_1', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '6', weight: '185', reps: '6', effort: 'Medium', sheetRow: 2 },
+  { workout_id: 'w_1', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '6', weight: '185', reps: '5', effort: 'Hard', sheetRow: 3 },
+  { workout_id: 'w_2', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 1, planned_reps: '6', weight: '175', reps: '6', effort: 'Medium', sheetRow: 4 },
+  { workout_id: 'w_1', exercise_id: 'ex_2', exercise_name: 'Squat', section: 'primary', exercise_order: 2, set_number: 1, planned_reps: '8', weight: '225', reps: '8', effort: 'Medium', sheetRow: 5 },
+  { workout_id: 'w_2', exercise_id: 'ex_1', exercise_name: 'Bench Press', section: 'primary', exercise_order: 1, set_number: 2, planned_reps: '6', weight: '175', reps: '5', effort: 'Hard', sheetRow: 6 },
 ];
 
 describe('Cascade exercise name changes (#17)', () => {

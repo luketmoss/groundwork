@@ -22,8 +22,6 @@ export interface TemplateRow {
   section: Section | string;
   sets: string;
   reps: string;
-  created: string;
-  updated: string;
 }
 export interface TemplateRowWithRow extends TemplateRow { sheetRow: number; }
 
@@ -59,7 +57,6 @@ export interface WorkoutSet {
   weight: string;
   reps: string;
   effort: Effort | '';
-  notes: string;
 }
 export interface SetWithRow extends WorkoutSet { sheetRow: number; }
 

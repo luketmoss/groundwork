@@ -42,7 +42,6 @@ export function applyChangeSection(
         weight: '',
         reps: '',
         effort: '',
-        notes: '',
         saved: false,
         sheetRow: -1,
       };

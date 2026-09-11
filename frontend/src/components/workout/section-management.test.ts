@@ -10,7 +10,6 @@ function makeSet(overrides: Partial<TrackerSet> = {}): TrackerSet {
     weight: '135',
     reps: '8',
     effort: 'Medium',
-    notes: '',
     saved: true,
     sheetRow: 10,
     ...overrides,

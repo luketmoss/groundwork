@@ -12,8 +12,6 @@ function makeRow(overrides: Partial<TemplateRowWithRow> = {}): TemplateRowWithRo
     section: 'primary',
     sets: '4',
     reps: '8-10',
-    created: '2025-01-01T00:00:00.000Z',
-    updated: '2025-01-01T00:00:00.000Z',
     sheetRow: 2,
     ...overrides,
   };

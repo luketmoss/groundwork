@@ -41,7 +41,6 @@ export function applyCopyDown(
         weight: lt.weight,
         reps: lt.reps,
         effort: '',
-        notes: '',
         saved: false,
         sheetRow: existing?.sheetRow ?? -1,
       });
