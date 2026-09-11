@@ -69,33 +69,57 @@ These decisions were made with the user and must be respected by all agents:
 - **Copy workout**: Pre-fill from previous + show "last time" reference while logging
 - **Device**: Mobile-first (375px primary breakpoint)
 
-## Agent Routing
+## The Board
 
-**Issue tracker: GitHub only.** All issue references mean GitHub issues. Use `gh` CLI exclusively.
+**Issue tracker: GitHub only.** All issue references mean GitHub issues; use the
+`gh` CLI exclusively. Project #4, `https://github.com/users/luketmoss/projects/4`.
 
-When the user's request matches a custom skill, invoke it automatically:
-- Bug report, feature idea, or new request → `/idea`
-- UX or accessibility audit → `/ux`
-- CI/CD or deployment issue → `/devops`
+**All board writes go through `node .thrive/board.mjs`** — never hand-write
+GraphQL against the project and never call `gh project field-list`. IDs live in
+`.thrive/board.json`; `board.mjs sync` refreshes them if a column is added or
+renamed.
 
-**When the user references an issue number**, always start the Full Pipeline.
+| Stage | Skill | Gate |
+|---|---|---|
+| To Do | `/idea` | |
+| PM Refining | `/pm` | |
+| UX | `/ux` | |
+| Refined | — | **agree with the spec?** |
+| In Development | `/dev` | |
+| Testing | `/qa` | |
+| Code Review | `/review` | |
+| Ready to Ship | `/ship` | **agree with the implementation?** |
+| Done | — | |
 
-## Pipeline Orchestration
+Each skill owns its own column moves. A stage skill is a step, not a stopping
+point — each one names the skill that moves the work on.
 
-**You (the main Claude instance) are the orchestrator.** You invoke skills in order, pass results between them, and ensure no step is skipped.
+## The Two Runs
 
-### Refinement Pipeline
-1. Move issue to **PM Refining**. Invoke `/pm` with the issue number.
-2. Move issue to **UX**. Invoke `/ux` with the issue number and ACs.
-3. Invoke `/pm` again with UX findings (accept/defer/reject).
-4. Move issue to **Refined**.
-5. Present final ACs to user (design gate).
+Work moves through the board in **runs**, not stage by stage. A run chains its
+stages back to back in one pass and does not check in between them.
 
-### Dev Pipeline
-1. **Dev**: Invoke `/dev` with the issue number.
-2. **QA**: Invoke `/qa` with the issue number.
-3. **Code Review**: Invoke `/review` with the issue number.
-4. **Auto-merge**: Approve + squash-merge + delete branch + move to Done.
+- **`/refine`** — To Do → Refined. "Get #42 ready for dev", "refine this",
+  "spec it out". Chains `/idea` (if the issue doesn't exist) → `/pm` → `/ux` →
+  `/pm`, and stops at the design gate.
+- **`/finish`** — Refined → Done. "Finish #42", "ship it", "build it out".
+  Chains `/dev` → `/qa` → `/review` → `/ship`, resuming from whatever column the
+  issue is actually in.
 
-### Conflict Resolution
-2 attempts per failing stage max. After 2 failures, stop and tell the user.
+The two runs are deliberately separate. Running them back to back skips the
+design gate, which is the only review of the spec.
+
+**Do not chain the stages by hand.** If the request is a run, invoke the run
+skill; it owns the sequence, the halt conditions, and the report.
+
+Outside the runs: `/devops` for CI/CD and deployment problems, `/ux` on its own
+for a standalone audit.
+
+## Halting
+
+A run stops early only for the conditions its skill lists — an open product
+question, a failed criterion with no clear fix, a blocking review, a red check.
+Two attempts at a failing stage, then stop.
+
+**A halted run is a success.** Report where it stopped and why; do not work
+around a gate, and do not guess at an answer to a question you raised.

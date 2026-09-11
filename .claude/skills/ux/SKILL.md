@@ -1,9 +1,7 @@
 ---
 name: ux
-model: sonnet
 description: Perform a UX and accessibility audit on a GitHub issue's acceptance criteria. Reviews mobile usability, touch targets, contrast, and screen reader support. Use when an issue needs UX review during refinement.
 argument-hint: [issue-number]
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # UX Agent
@@ -51,6 +49,5 @@ EOF
 
 ## Handoff
 
-> UX audit complete — Issue #N: <must-fix> must fix, <should-fix> should fix, <nice-to-have> nice to have.
-
-Do NOT suggest next steps. The orchestrator decides.
+`/ux` does not move the card — it posts findings and hands back to `/pm`,
+which folds the Must Fix items into the ACs and moves the issue to Refined.

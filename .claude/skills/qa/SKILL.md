@@ -1,9 +1,7 @@
 ---
 name: qa
-model: sonnet
 description: Test a GitHub issue's implementation against its acceptance criteria. Runs automated tests, performs manual verification in demo mode, and reports pass/fail results. Use when an issue is in the Testing column.
 argument-hint: [issue-number]
-allowed-tools: Bash, Read, Grep, Glob, mcp__Claude_Preview__preview_start, mcp__Claude_Preview__preview_screenshot, mcp__Claude_Preview__preview_snapshot, mcp__Claude_Preview__preview_click, mcp__Claude_Preview__preview_fill, mcp__Claude_Preview__preview_eval, mcp__Claude_Preview__preview_console_logs, mcp__Claude_Preview__preview_network, mcp__Claude_Preview__preview_stop, mcp__Claude_Preview__preview_list, mcp__Claude_Preview__preview_resize
 ---
 
 # QA Agent
@@ -15,21 +13,16 @@ Meticulous tester. Verifies implementations against acceptance criteria with aut
 - **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
-## Board Movement
+## Board
 
-Never call `gh project list` or `gh project field-list` — IDs are hardcoded.
+All board writes go through the helper — never hand-write GraphQL against the
+project, and never call `gh project field-list`. IDs live in `.thrive/board.json`.
 
 ```bash
-# Get item ID
-gh project item-list 4 --owner luketmoss --limit 100 --format json --jq '.items[] | select(.content.number == <ISSUE_NUMBER>) | .id'
-# Move column
-gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwHOAJR9ys4BRxNc" itemId: "ITEM_ID" fieldId: "PVTSSF_lAHOAJR9ys4BRxNczg_f9DE" value: { singleSelectOptionId: "OPTION_ID" } }) { projectV2Item { id } } }'
+node .thrive/board.mjs show <issue>
+node .thrive/board.mjs set <issue> --status "Testing"
+node .thrive/board.mjs set <issue> --status "Code Review"
 ```
-
-| Column | Option ID |
-|--------|-----------|
-| Testing | `1bd1ca27` |
-| Code Review | `2e7d4fd2` |
 
 ## Demo Mode
 
@@ -49,9 +42,10 @@ Demo mode auto-authenticates — no login screen, no OAuth popups. Just navigate
 
 ### Token Efficiency Tips
 
-- Prefer `preview_eval` or `preview_inspect` over `preview_snapshot` when checking specific elements — snapshots return huge accessibility trees
-- Use `preview_screenshot` for visual verification, `preview_inspect` for precise CSS values
-- Batch multiple checks in a single `preview_eval` IIFE instead of multiple calls
+- Open the app with `preview_start` (`.claude/launch.json` defines the dev server), then drive it with the Browser pane tools
+- Prefer `read_page` or `javascript_tool` over screenshots when checking specific elements or computed CSS — a screenshot cannot tell you a contrast ratio
+- Use `computer` with `action: "screenshot"` for visual evidence, `resize_window` for the 375px breakpoint
+- Batch multiple DOM checks into a single `javascript_tool` IIFE instead of many calls
 - Skip 480px tablet breakpoint unless the feature specifically involves responsive layout changes
 
 ## Process
@@ -81,6 +75,9 @@ EOF
 
 ## Handoff
 
-> QA complete — Issue #N: <X/Y ACs pass>. Verdict: PASS/FAIL.
+On PASS: take the PR out of draft (`gh pr ready <PR_N>`) and move the issue to
+**Code Review**. `/review` reviews the diff.
 
-Do NOT suggest next steps. The orchestrator decides.
+On FAIL: move it back to **In Development** and say what failed. A criterion you
+did not actually check is a failure, not a pass — never infer from a green build
+that the behavior is correct.

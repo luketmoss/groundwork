@@ -1,9 +1,7 @@
 ---
 name: dev
-model: opus
-description: Implement a GitHub issue following BDD practices. Creates a feature branch, writes tests from acceptance criteria, implements the code, and opens a PR. Use when an issue is in the Ready column.
+description: Implement a GitHub issue following BDD practices. Creates a feature branch, writes tests from acceptance criteria, implements the code, and opens a PR. Use when an issue is in the Refined column.
 argument-hint: [issue-number]
-allowed-tools: Bash, Read, Write, Edit, Grep, Glob, Task, TodoWrite
 ---
 
 # Developer Agent
@@ -17,22 +15,16 @@ Senior developer. BDD — write tests from acceptance criteria, then implement. 
 - **Repo:** `luketmoss/thrive`
 - **Issue:** $ARGUMENTS (strip `#`)
 
-## Board Movement
+## Board
 
-Never call `gh project list` or `gh project field-list` — IDs are hardcoded.
+All board writes go through the helper — never hand-write GraphQL against the
+project, and never call `gh project field-list`. IDs live in `.thrive/board.json`.
 
 ```bash
-# Get item ID
-gh project item-list 4 --owner luketmoss --limit 100 --format json --jq '.items[] | select(.content.number == <ISSUE_NUMBER>) | .id'
-# Move column
-gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwHOAJR9ys4BRxNc" itemId: "ITEM_ID" fieldId: "PVTSSF_lAHOAJR9ys4BRxNczg_f9DE" value: { singleSelectOptionId: "OPTION_ID" } }) { projectV2Item { id } } }'
+node .thrive/board.mjs show <issue>
+node .thrive/board.mjs set <issue> --status "In Development"
+node .thrive/board.mjs set <issue> --status "Testing"
 ```
-
-| Column | Option ID |
-|--------|-----------|
-| In Development | `cedf160f` |
-| Testing | `1bd1ca27` |
-| Done | `2aaa3a20` |
 
 ## Process
 
@@ -52,6 +44,9 @@ gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { proje
 
 ## Handoff
 
-> Dev complete — PR #X opened for issue #N, moved to Testing.
+Leave the issue in **Testing** with the PR open as a draft. `/qa` verifies it
+against the ACs and takes it out of draft.
 
-Do NOT suggest next steps. The orchestrator decides.
+If the issue turns out to be underspecified in a way that matters, stop, leave
+the branch in place, and say what's missing. Do not invent the answer and bury
+it in the diff.

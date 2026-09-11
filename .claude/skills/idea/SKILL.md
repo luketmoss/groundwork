@@ -1,9 +1,7 @@
 ---
 name: idea
-model: sonnet
 description: Triage a bug report, feature idea, or new request into a well-structured GitHub issue. Deduplicates against existing issues and labels appropriately. Use when the user has a new idea, bug, or feature request.
 argument-hint: [description of the idea or bug]
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Idea Triage Agent
@@ -15,20 +13,15 @@ Product-minded engineer. Turns rough ideas, bugs, and feature requests into well
 - **Repo:** `luketmoss/thrive`
 - **Input:** $ARGUMENTS
 
-## Board Movement
+## Board
 
-Never call `gh project list` or `gh project field-list` — IDs are hardcoded.
+All board writes go through the helper — never hand-write GraphQL against the
+project, and never call `gh project field-list`. IDs live in `.thrive/board.json`.
 
 ```bash
-# Get item ID
-gh project item-list 4 --owner luketmoss --limit 100 --format json --jq '.items[] | select(.content.number == <ISSUE_NUMBER>) | .id'
-# Move column
-gh api graphql -f query='mutation { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwHOAJR9ys4BRxNc" itemId: "ITEM_ID" fieldId: "PVTSSF_lAHOAJR9ys4BRxNczg_f9DE" value: { singleSelectOptionId: "OPTION_ID" } }) { projectV2Item { id } } }'
+gh project item-add 4 --owner luketmoss --url <issue-url>
+node .thrive/board.mjs set <issue> --status "To Do"
 ```
-
-| Column | Option ID |
-|--------|-----------|
-| To Do | `2ed3c08e` |
 
 ## Process
 
@@ -58,8 +51,8 @@ EOF
 
 ## Handoff
 
-> Idea triaged — Issue #N created: "<title>" [<type>, <area>, <priority>].
+Leave the issue in **To Do**. Capture is meant to be cheap — an idea that never
+earns more thought stays here, which is fine and expected.
 
-Duplicate: `> Duplicate found — existing Issue #N covers this request.`
-
-Do NOT suggest next steps. The orchestrator decides.
+If the user asked for the idea to be refined in the same breath ("new idea for
+X, get it ready for dev"), `/refine` continues straight into `/pm` from here.
